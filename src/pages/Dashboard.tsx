@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -7,105 +7,57 @@ import { CategoryChart } from "@/components/dashboard/CategoryChart";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { GoalProgress } from "@/components/dashboard/GoalProgress";
 import { useAuth } from "@/hooks/useAuth";
+import { useTransactionStats, useRecentTransactions } from "@/hooks/useTransactions";
+import { useCategoryStats } from "@/hooks/useCategories";
+import { useActiveGoals } from "@/hooks/useGoals";
 
-// Mock data - será substituído por dados reais do banco
-const mockBalance = 15420.5;
-const mockIncome = 8500;
-const mockExpense = 4230.75;
-
+// Mock chart data - will be replaced with real data later
 const mockChartData = [
-  { month: "Ago", receitas: 7200, despesas: 4100 },
-  { month: "Set", receitas: 8100, despesas: 5200 },
-  { month: "Out", receitas: 7800, despesas: 4800 },
-  { month: "Nov", receitas: 8500, despesas: 4500 },
-  { month: "Dez", receitas: 9200, despesas: 5100 },
-  { month: "Jan", receitas: 8500, despesas: 4230 },
-];
-
-const mockCategories = [
-  { name: "Alimentação", value: 1250, color: "hsl(258, 90%, 66%)" },
-  { name: "Transporte", value: 850, color: "hsl(330, 86%, 60%)" },
-  { name: "Moradia", value: 1200, color: "hsl(160, 84%, 39%)" },
-  { name: "Lazer", value: 430, color: "hsl(38, 92%, 50%)" },
-  { name: "Outros", value: 500, color: "hsl(220, 9%, 46%)" },
-];
-
-const mockTransactions = [
-  {
-    id: "1",
-    description: "Salário",
-    category: "Renda",
-    amount: 8500,
-    type: "income" as const,
-    date: "2024-01-05",
-  },
-  {
-    id: "2",
-    description: "Supermercado Extra",
-    category: "Alimentação",
-    amount: 342.5,
-    type: "expense" as const,
-    date: "2024-01-04",
-  },
-  {
-    id: "3",
-    description: "Netflix",
-    category: "Assinaturas",
-    amount: 55.9,
-    type: "expense" as const,
-    date: "2024-01-03",
-  },
-  {
-    id: "4",
-    description: "Uber",
-    category: "Transporte",
-    amount: 28.5,
-    type: "expense" as const,
-    date: "2024-01-03",
-  },
-  {
-    id: "5",
-    description: "Freelance Design",
-    category: "Renda Extra",
-    amount: 1200,
-    type: "income" as const,
-    date: "2024-01-02",
-  },
-];
-
-const mockGoals = [
-  {
-    id: "1",
-    name: "Reserva de Emergência",
-    current: 8500,
-    target: 15000,
-    icon: "🛡️",
-    color: "hsl(160, 84%, 39%)",
-  },
-  {
-    id: "2",
-    name: "Viagem Europa",
-    current: 4200,
-    target: 12000,
-    icon: "✈️",
-    color: "hsl(258, 90%, 66%)",
-  },
-  {
-    id: "3",
-    name: "iPhone 15",
-    current: 2800,
-    target: 5000,
-    icon: "📱",
-    color: "hsl(330, 86%, 60%)",
-  },
+  { month: "Ago", receitas: 0, despesas: 0 },
+  { month: "Set", receitas: 0, despesas: 0 },
+  { month: "Out", receitas: 0, despesas: 0 },
+  { month: "Nov", receitas: 0, despesas: 0 },
+  { month: "Dez", receitas: 0, despesas: 0 },
+  { month: "Jan", receitas: 0, despesas: 0 },
 ];
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { data: stats, isLoading: statsLoading } = useTransactionStats();
+  const { data: recentTransactions, isLoading: transactionsLoading } = useRecentTransactions(5);
+  const { data: categoryStats, isLoading: categoriesLoading } = useCategoryStats();
+  const { data: activeGoals, isLoading: goalsLoading } = useActiveGoals(3);
   
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 
                     user?.email?.split('@')[0] || 
                     'Usuário';
+
+  const isLoading = statsLoading || transactionsLoading || categoriesLoading || goalsLoading;
+
+  // Transform transactions for the component
+  const formattedTransactions = (recentTransactions || []).map(t => ({
+    id: t.id,
+    description: t.description,
+    category: t.category?.name || "Sem categoria",
+    amount: Number(t.amount),
+    type: t.type as "income" | "expense",
+    date: t.date,
+  }));
+
+  // Transform goals for the component
+  const formattedGoals = (activeGoals || []).map(g => ({
+    id: g.id,
+    name: g.name,
+    current: Number(g.current_amount),
+    target: Number(g.target_amount),
+    icon: g.icon,
+    color: g.color,
+  }));
+
+  // Transform category stats
+  const formattedCategories = (categoryStats || []).length > 0 
+    ? categoryStats 
+    : [{ name: "Sem gastos", value: 0, color: "hsl(220, 9%, 46%)" }];
 
   return (
     <AppLayout>
@@ -119,38 +71,49 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Balance and Stats Grid */}
-      <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-4 mb-6">
-        <div className="lg:col-span-2">
-          <BalanceCard balance={mockBalance} percentChange={12.5} />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-        <StatCard
-          title="Receitas do Mês"
-          value={mockIncome}
-          icon={TrendingUp}
-          type="income"
-          delay={100}
-        />
-        <StatCard
-          title="Despesas do Mês"
-          value={mockExpense}
-          icon={TrendingDown}
-          type="expense"
-          delay={150}
-        />
-      </div>
+      ) : (
+        <>
+          {/* Balance and Stats Grid */}
+          <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-4 mb-6">
+            <div className="lg:col-span-2">
+              <BalanceCard 
+                balance={stats?.balance || 0} 
+                percentChange={0} 
+              />
+            </div>
+            <StatCard
+              title="Receitas do Mês"
+              value={stats?.totalIncome || 0}
+              icon={TrendingUp}
+              type="income"
+              delay={100}
+            />
+            <StatCard
+              title="Despesas do Mês"
+              value={stats?.totalExpense || 0}
+              icon={TrendingDown}
+              type="expense"
+              delay={150}
+            />
+          </div>
 
-      {/* Charts Grid */}
-      <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2 mb-6">
-        <ExpenseChart data={mockChartData} />
-        <CategoryChart data={mockCategories} />
-      </div>
+          {/* Charts Grid */}
+          <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2 mb-6">
+            <ExpenseChart data={mockChartData} />
+            <CategoryChart data={formattedCategories} />
+          </div>
 
-      {/* Transactions and Goals Grid */}
-      <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2">
-        <RecentTransactions transactions={mockTransactions} />
-        <GoalProgress goals={mockGoals} />
-      </div>
+          {/* Transactions and Goals Grid */}
+          <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2">
+            <RecentTransactions transactions={formattedTransactions} />
+            <GoalProgress goals={formattedGoals} />
+          </div>
+        </>
+      )}
     </AppLayout>
   );
 }
