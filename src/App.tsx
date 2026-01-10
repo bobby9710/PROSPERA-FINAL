@@ -13,6 +13,7 @@ import Cards from "./pages/Cards";
 import Assistant from "./pages/Assistant";
 import Profile from "./pages/Profile";
 import AddTransaction from "./pages/AddTransaction";
+import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -79,6 +80,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AddTransaction />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categories"
+              element={
+                <ProtectedRoute>
+                  <Categories />
                 </ProtectedRoute>
               }
             />

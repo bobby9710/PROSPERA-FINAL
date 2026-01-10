@@ -10,6 +10,7 @@ import {
   Settings,
   Sparkles,
   LogOut,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +21,7 @@ const navItems = [
   { icon: ArrowUpDown, label: "Transações", href: "/transactions" },
   { icon: Target, label: "Metas", href: "/goals" },
   { icon: CreditCard, label: "Cartões", href: "/cards" },
+  { icon: Tag, label: "Categorias", href: "/categories" },
   { icon: MessageSquare, label: "Assistente IA", href: "/assistant" },
   { icon: TrendingUp, label: "Insights", href: "/insights", premium: true },
 ];
