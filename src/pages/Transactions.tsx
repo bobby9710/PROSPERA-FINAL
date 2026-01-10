@@ -1,42 +1,41 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Plus, 
   Search, 
   Filter, 
   ArrowDownLeft, 
   ArrowUpRight,
-  MoreHorizontal,
-  Calendar
+  Trash2,
+  Calendar,
+  Loader2
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
-interface Transaction {
-  id: string;
-  description: string;
-  category: string;
-  amount: number;
-  type: "income" | "expense";
-  date: string;
-  method: string;
-}
-
-const mockTransactions: Transaction[] = [
-  { id: "1", description: "Salário", category: "Renda", amount: 8500, type: "income", date: "2024-01-05", method: "Transferência" },
-  { id: "2", description: "Supermercado Extra", category: "Alimentação", amount: 342.5, type: "expense", date: "2024-01-04", method: "Cartão Crédito" },
-  { id: "3", description: "Netflix", category: "Assinaturas", amount: 55.9, type: "expense", date: "2024-01-03", method: "Cartão Crédito" },
-  { id: "4", description: "Uber", category: "Transporte", amount: 28.5, type: "expense", date: "2024-01-03", method: "Débito" },
-  { id: "5", description: "Freelance Design", category: "Renda Extra", amount: 1200, type: "income", date: "2024-01-02", method: "PIX" },
-  { id: "6", description: "Farmácia", category: "Saúde", amount: 89.9, type: "expense", date: "2024-01-02", method: "PIX" },
-  { id: "7", description: "Academia", category: "Saúde", amount: 120, type: "expense", date: "2024-01-01", method: "Débito Automático" },
-  { id: "8", description: "Restaurante", category: "Alimentação", amount: 156.8, type: "expense", date: "2024-01-01", method: "Cartão Crédito" },
-];
+import { useTransactions, useDeleteTransaction, useTransactionStats } from "@/hooks/useTransactions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function Transactions() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<"all" | "income" | "expense">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const { data: transactions, isLoading } = useTransactions();
+  const { data: stats } = useTransactionStats();
+  const deleteTransaction = useDeleteTransaction();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -54,15 +53,23 @@ export default function Transactions() {
     });
   };
 
-  const filteredTransactions = mockTransactions.filter((t) => {
+  const filteredTransactions = (transactions || []).filter((t) => {
     const matchesFilter = filter === "all" || t.type === filter;
     const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          t.category.toLowerCase().includes(searchQuery.toLowerCase());
+                          (t.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  const totalIncome = mockTransactions.filter(t => t.type === "income").reduce((acc, t) => acc + t.amount, 0);
-  const totalExpense = mockTransactions.filter(t => t.type === "expense").reduce((acc, t) => acc + t.amount, 0);
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteTransaction.mutateAsync(deleteId);
+      toast.success("Transação excluída com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao excluir transação");
+    }
+    setDeleteId(null);
+  };
 
   return (
     <AppLayout>
@@ -74,7 +81,7 @@ export default function Transactions() {
             Gerencie suas receitas e despesas
           </p>
         </div>
-        <Button className="btn-gradient">
+        <Button className="btn-gradient" onClick={() => navigate("/add-transaction")}>
           <Plus className="w-5 h-5 mr-2" />
           Nova Transação
         </Button>
@@ -84,11 +91,11 @@ export default function Transactions() {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="stat-card animate-fade-in" style={{ animationDelay: '100ms' }}>
           <p className="text-sm text-muted-foreground mb-1">Total Receitas</p>
-          <p className="text-xl font-bold text-success">{formatCurrency(totalIncome)}</p>
+          <p className="text-xl font-bold text-success">{formatCurrency(stats?.totalIncome || 0)}</p>
         </div>
         <div className="stat-card animate-fade-in" style={{ animationDelay: '150ms' }}>
           <p className="text-sm text-muted-foreground mb-1">Total Despesas</p>
-          <p className="text-xl font-bold text-destructive">{formatCurrency(totalExpense)}</p>
+          <p className="text-xl font-bold text-destructive">{formatCurrency(stats?.totalExpense || 0)}</p>
         </div>
       </div>
 
@@ -133,62 +140,105 @@ export default function Transactions() {
 
       {/* Transactions List */}
       <div className="bg-card rounded-2xl border border-border/50 shadow-card overflow-hidden animate-slide-up" style={{ animationDelay: '250ms' }}>
-        <div className="divide-y divide-border/50">
-          {filteredTransactions.map((transaction, index) => (
-            <div
-              key={transaction.id}
-              className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
-            >
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : filteredTransactions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <p className="text-lg font-medium">Nenhuma transação encontrada</p>
+            <p className="text-sm">Adicione sua primeira transação clicando no botão acima</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/50">
+            {filteredTransactions.map((transaction) => (
               <div
-                className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                  transaction.type === "income"
-                    ? "bg-success/10"
-                    : "bg-destructive/10"
-                )}
+                key={transaction.id}
+                className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
               >
-                {transaction.type === "income" ? (
-                  <ArrowDownLeft className="w-6 h-6 text-success" />
-                ) : (
-                  <ArrowUpRight className="w-6 h-6 text-destructive" />
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">
-                  {transaction.description}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-sm text-muted-foreground">{transaction.category}</span>
-                  <span className="text-muted-foreground/50">•</span>
-                  <span className="text-sm text-muted-foreground">{transaction.method}</span>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p
+                <div
                   className={cn(
-                    "font-semibold",
+                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
                     transaction.type === "income"
-                      ? "text-success"
-                      : "text-destructive"
+                      ? "bg-success/10"
+                      : "bg-destructive/10"
                   )}
                 >
-                  {transaction.type === "income" ? "+" : "-"}
-                  {formatCurrency(transaction.amount)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {formatDate(transaction.date)}
-                </p>
-              </div>
+                  {transaction.type === "income" ? (
+                    <ArrowDownLeft className="w-6 h-6 text-success" />
+                  ) : (
+                    <ArrowUpRight className="w-6 h-6 text-destructive" />
+                  )}
+                </div>
 
-              <Button variant="ghost" size="icon" className="shrink-0">
-                <MoreHorizontal className="w-5 h-5" />
-              </Button>
-            </div>
-          ))}
-        </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground truncate">
+                    {transaction.description}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-sm text-muted-foreground">
+                      {transaction.category?.name || "Sem categoria"}
+                    </span>
+                    {transaction.payment_method && (
+                      <>
+                        <span className="text-muted-foreground/50">•</span>
+                        <span className="text-sm text-muted-foreground">{transaction.payment_method}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p
+                    className={cn(
+                      "font-semibold",
+                      transaction.type === "income"
+                        ? "text-success"
+                        : "text-destructive"
+                    )}
+                  >
+                    {transaction.type === "income" ? "+" : "-"}
+                    {formatCurrency(Number(transaction.amount))}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDate(transaction.date)}
+                  </p>
+                </div>
+
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setDeleteId(transaction.id)}
+                >
+                  <Trash2 className="w-5 h-5" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir transação?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A transação será permanentemente excluída.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
