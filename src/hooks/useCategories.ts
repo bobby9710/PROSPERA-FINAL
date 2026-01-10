@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -11,6 +11,20 @@ export interface Category {
   type: "income" | "expense";
   is_default: boolean;
   created_at: string;
+}
+
+export interface CreateCategoryData {
+  name: string;
+  icon?: string;
+  color?: string;
+  type: "income" | "expense";
+}
+
+export interface UpdateCategoryData {
+  id: string;
+  name?: string;
+  icon?: string;
+  color?: string;
 }
 
 export function useCategories(type?: "income" | "expense") {
@@ -91,5 +105,76 @@ export function useCategoryStats() {
         .slice(0, 5);
     },
     enabled: !!user,
+  });
+}
+
+export function useCreateCategory() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreateCategoryData) => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data: category, error } = await supabase
+        .from("categories")
+        .insert({
+          user_id: user.id,
+          name: data.name,
+          icon: data.icon || "📦",
+          color: data.color || "#8B5CF6",
+          type: data.type,
+          is_default: false,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return category;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+export function useUpdateCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: UpdateCategoryData) => {
+      const { id, ...updateData } = data;
+      
+      const { data: category, error } = await supabase
+        .from("categories")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return category;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("categories")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
   });
 }
