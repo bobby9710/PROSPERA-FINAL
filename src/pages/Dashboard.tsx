@@ -7,19 +7,9 @@ import { CategoryChart } from "@/components/dashboard/CategoryChart";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { GoalProgress } from "@/components/dashboard/GoalProgress";
 import { useAuth } from "@/hooks/useAuth";
-import { useTransactionStats, useRecentTransactions } from "@/hooks/useTransactions";
+import { useTransactionStats, useRecentTransactions, useMonthlyChartData } from "@/hooks/useTransactions";
 import { useCategoryStats } from "@/hooks/useCategories";
 import { useActiveGoals } from "@/hooks/useGoals";
-
-// Mock chart data - will be replaced with real data later
-const mockChartData = [
-  { month: "Ago", receitas: 0, despesas: 0 },
-  { month: "Set", receitas: 0, despesas: 0 },
-  { month: "Out", receitas: 0, despesas: 0 },
-  { month: "Nov", receitas: 0, despesas: 0 },
-  { month: "Dez", receitas: 0, despesas: 0 },
-  { month: "Jan", receitas: 0, despesas: 0 },
-];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -27,12 +17,13 @@ export default function Dashboard() {
   const { data: recentTransactions, isLoading: transactionsLoading } = useRecentTransactions(5);
   const { data: categoryStats, isLoading: categoriesLoading } = useCategoryStats();
   const { data: activeGoals, isLoading: goalsLoading } = useActiveGoals(3);
+  const { data: chartData, isLoading: chartLoading } = useMonthlyChartData(6);
   
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 
                     user?.email?.split('@')[0] || 
                     'Usuário';
 
-  const isLoading = statsLoading || transactionsLoading || categoriesLoading || goalsLoading;
+  const isLoading = statsLoading || transactionsLoading || categoriesLoading || goalsLoading || chartLoading;
 
   // Transform transactions for the component
   const formattedTransactions = (recentTransactions || []).map(t => ({
@@ -103,7 +94,7 @@ export default function Dashboard() {
 
           {/* Charts Grid */}
           <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2 mb-6">
-            <ExpenseChart data={mockChartData} />
+            <ExpenseChart data={chartData || []} />
             <CategoryChart data={formattedCategories} />
           </div>
 

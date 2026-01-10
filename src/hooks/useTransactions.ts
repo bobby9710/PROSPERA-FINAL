@@ -127,6 +127,62 @@ export function useTransactionStats() {
   });
 }
 
+export function useMonthlyChartData(months: number = 6) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["transactions", "chart", user?.id, months],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
+      
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("amount, type, date")
+        .eq("user_id", user.id)
+        .gte("date", startDate.toISOString().split('T')[0])
+        .order("date");
+
+      if (error) throw error;
+
+      // Group by month
+      const monthlyData = new Map<string, { receitas: number; despesas: number }>();
+      
+      // Initialize all months
+      for (let i = 0; i < months; i++) {
+        const date = new Date(now.getFullYear(), now.getMonth() - months + 1 + i, 1);
+        const key = date.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+        const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
+        monthlyData.set(capitalizedKey, { receitas: 0, despesas: 0 });
+      }
+
+      // Fill with real data
+      data.forEach((t) => {
+        const date = new Date(t.date);
+        const key = date.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+        const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
+        const existing = monthlyData.get(capitalizedKey);
+        
+        if (existing) {
+          if (t.type === "income") {
+            existing.receitas += Number(t.amount);
+          } else {
+            existing.despesas += Number(t.amount);
+          }
+        }
+      });
+
+      return Array.from(monthlyData.entries()).map(([month, values]) => ({
+        month,
+        ...values,
+      }));
+    },
+    enabled: !!user,
+  });
+}
+
 export function useCreateTransaction() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
