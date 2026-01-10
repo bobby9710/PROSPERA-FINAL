@@ -6,52 +6,51 @@ import {
   TrendingDown,
   Calendar,
   Tag,
-  CreditCard,
   FileText,
-  Repeat
+  Loader2
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-
-const categories = {
-  income: [
-    { id: "salary", label: "Salário", icon: "💰" },
-    { id: "freelance", label: "Freelance", icon: "💼" },
-    { id: "investment", label: "Investimentos", icon: "📈" },
-    { id: "gift", label: "Presente", icon: "🎁" },
-    { id: "other", label: "Outros", icon: "📦" },
-  ],
-  expense: [
-    { id: "food", label: "Alimentação", icon: "🍔" },
-    { id: "transport", label: "Transporte", icon: "🚗" },
-    { id: "housing", label: "Moradia", icon: "🏠" },
-    { id: "health", label: "Saúde", icon: "🏥" },
-    { id: "entertainment", label: "Lazer", icon: "🎮" },
-    { id: "shopping", label: "Compras", icon: "🛍️" },
-    { id: "subscription", label: "Assinaturas", icon: "📱" },
-    { id: "education", label: "Educação", icon: "📚" },
-    { id: "other", label: "Outros", icon: "📦" },
-  ],
-};
+import { useCategories } from "@/hooks/useCategories";
+import { useCreateTransaction } from "@/hooks/useTransactions";
+import { toast } from "sonner";
 
 export default function AddTransaction() {
   const navigate = useNavigate();
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Save transaction
-    navigate("/transactions");
-  };
+  const { data: categories, isLoading: categoriesLoading } = useCategories(type);
+  const createTransaction = useCreateTransaction();
 
-  const currentCategories = categories[type];
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!amount || !description || !categoryId) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+
+    try {
+      await createTransaction.mutateAsync({
+        amount: parseFloat(amount),
+        description,
+        category_id: categoryId,
+        date,
+        type,
+      });
+      toast.success("Transação criada com sucesso!");
+      navigate("/transactions");
+    } catch (error) {
+      toast.error("Erro ao criar transação");
+    }
+  };
 
   return (
     <AppLayout>
@@ -69,7 +68,10 @@ export default function AddTransaction() {
       {/* Type Toggle */}
       <div className="flex gap-2 p-1 bg-muted rounded-xl mb-6">
         <button
-          onClick={() => setType("expense")}
+          onClick={() => {
+            setType("expense");
+            setCategoryId("");
+          }}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-all",
             type === "expense"
@@ -81,7 +83,10 @@ export default function AddTransaction() {
           Despesa
         </button>
         <button
-          onClick={() => setType("income")}
+          onClick={() => {
+            setType("income");
+            setCategoryId("");
+          }}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-all",
             type === "income"
@@ -134,24 +139,30 @@ export default function AddTransaction() {
             <Tag className="w-4 h-4" />
             Categoria
           </Label>
-          <div className="grid grid-cols-3 gap-2">
-            {currentCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setCategory(cat.id)}
-                className={cn(
-                  "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
-                  category === cat.id
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                )}
-              >
-                <span className="text-2xl">{cat.icon}</span>
-                <span className="text-xs font-medium">{cat.label}</span>
-              </button>
-            ))}
-          </div>
+          {categoriesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {categories?.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setCategoryId(cat.id)}
+                  className={cn(
+                    "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
+                    categoryId === cat.id
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  )}
+                >
+                  <span className="text-2xl">{cat.icon}</span>
+                  <span className="text-xs font-medium">{cat.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Date */}
@@ -169,8 +180,16 @@ export default function AddTransaction() {
         </div>
 
         {/* Submit */}
-        <Button type="submit" className="w-full btn-gradient h-12 text-lg">
-          Salvar Transação
+        <Button 
+          type="submit" 
+          className="w-full btn-gradient h-12 text-lg"
+          disabled={createTransaction.isPending}
+        >
+          {createTransaction.isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            "Salvar Transação"
+          )}
         </Button>
       </form>
     </AppLayout>
