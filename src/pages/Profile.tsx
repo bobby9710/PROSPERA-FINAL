@@ -1,7 +1,5 @@
 import { 
   User, 
-  Mail, 
-  Phone, 
   Bell, 
   Shield, 
   CreditCard, 
@@ -13,7 +11,8 @@ import {
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
   {
@@ -56,20 +55,42 @@ const menuItems = [
 ];
 
 export default function Profile() {
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Até logo!",
+      description: "Você saiu da sua conta",
+    });
+  };
+
+  const getInitials = (name?: string | null, email?: string) => {
+    if (name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    return email?.slice(0, 2).toUpperCase() || 'U';
+  };
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
+
   return (
     <AppLayout>
       {/* Profile Header */}
       <div className="text-center mb-8 animate-fade-in">
         <div className="relative inline-block mb-4">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-primary">
-            <span className="text-3xl font-bold text-primary-foreground">JM</span>
+            <span className="text-3xl font-bold text-primary-foreground">
+              {getInitials(user?.user_metadata?.full_name, user?.email)}
+            </span>
           </div>
           <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-success flex items-center justify-center border-4 border-background">
             <Crown className="w-4 h-4 text-success-foreground" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold">João Mendes</h1>
-        <p className="text-muted-foreground">joao.mendes@email.com</p>
+        <h1 className="text-2xl font-bold">{displayName}</h1>
+        <p className="text-muted-foreground">{user?.email}</p>
         <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10">
           <Crown className="w-4 h-4 text-primary" />
           <span className="text-sm font-medium text-primary">Plano Premium</span>
@@ -79,22 +100,22 @@ export default function Profile() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="stat-card text-center animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <p className="text-2xl font-bold text-primary">127</p>
+          <p className="text-2xl font-bold text-primary">0</p>
           <p className="text-sm text-muted-foreground">Transações</p>
         </div>
         <div className="stat-card text-center animate-fade-in" style={{ animationDelay: '150ms' }}>
-          <p className="text-2xl font-bold text-success">4</p>
+          <p className="text-2xl font-bold text-success">0</p>
           <p className="text-sm text-muted-foreground">Metas Ativas</p>
         </div>
         <div className="stat-card text-center animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <p className="text-2xl font-bold text-secondary">3</p>
+          <p className="text-2xl font-bold text-secondary">0</p>
           <p className="text-sm text-muted-foreground">Cartões</p>
         </div>
       </div>
 
       {/* Menu Items */}
       <div className="bg-card rounded-2xl border border-border/50 shadow-card overflow-hidden animate-slide-up" style={{ animationDelay: '250ms' }}>
-        {menuItems.map((item, index) => (
+        {menuItems.map((item) => (
           <button
             key={item.href}
             className="flex items-center gap-4 w-full p-4 hover:bg-muted/50 transition-colors border-b border-border/50 last:border-0"
@@ -122,6 +143,7 @@ export default function Profile() {
       <Button
         variant="outline"
         className="w-full mt-6 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+        onClick={handleSignOut}
       >
         <LogOut className="w-5 h-5 mr-2" />
         Sair da Conta
