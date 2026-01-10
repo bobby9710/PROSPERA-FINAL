@@ -12,6 +12,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
@@ -29,6 +31,16 @@ const bottomNavItems = [
 
 export function Sidebar() {
   const location = useLocation();
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Até logo!",
+      description: "Você saiu da sua conta",
+    });
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border z-50 flex flex-col">
@@ -83,7 +95,10 @@ export function Sidebar() {
           );
         })}
         
-        <button className="nav-item w-full text-destructive hover:bg-destructive/10 hover:text-destructive">
+        <button 
+          onClick={handleSignOut}
+          className="nav-item w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+        >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sair</span>
         </button>

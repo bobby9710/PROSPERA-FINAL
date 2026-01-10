@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -6,12 +6,12 @@ import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 import { CategoryChart } from "@/components/dashboard/CategoryChart";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { GoalProgress } from "@/components/dashboard/GoalProgress";
+import { useAuth } from "@/hooks/useAuth";
 
 // Mock data - será substituído por dados reais do banco
 const mockBalance = 15420.5;
 const mockIncome = 8500;
 const mockExpense = 4230.75;
-const mockMonthBalance = mockIncome - mockExpense;
 
 const mockChartData = [
   { month: "Ago", receitas: 7200, despesas: 4100 },
@@ -101,12 +101,18 @@ const mockGoals = [
 ];
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 
+                    user?.email?.split('@')[0] || 
+                    'Usuário';
+
   return (
     <AppLayout>
       {/* Header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
-          Olá, <span className="text-gradient">João</span> 👋
+          Olá, <span className="text-gradient">{firstName}</span> 👋
         </h1>
         <p className="text-muted-foreground mt-1">
           Aqui está o resumo das suas finanças
