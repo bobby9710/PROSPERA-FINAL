@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { 
   Plus, 
   Search, 
@@ -10,13 +9,25 @@ import {
   Loader2,
   Download,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Edit,
+  Copy,
+  ArrowUpDown,
+  Filter
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useTransactions, useDeleteTransaction, Transaction } from "@/hooks/useTransactions";
+import { 
+  useTransactions, 
+  useDeleteTransaction, 
+  useCreateTransaction,
+  useUpdateTransaction,
+  Transaction,
+  CreateTransactionData
+} from "@/hooks/useTransactions";
+import { useCategories } from "@/hooks/useCategories";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +43,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { TransactionForm } from "@/components/transactions/TransactionForm";
 import { toast } from "sonner";
 
 const MONTHS = [
@@ -39,20 +58,38 @@ const MONTHS = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
+const ITEMS_PER_PAGE = 50;
+
+type SortField = "date" | "amount" | "category";
+type SortOrder = "asc" | "desc";
+
 export default function Transactions() {
-  const navigate = useNavigate();
   const [filter, setFilter] = useState<"all" | "income" | "expense">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Modal states
+  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit" | "duplicate">("create");
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   
   // Period filter state
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const { data: transactions, isLoading } = useTransactions();
+  const { data: categories } = useCategories();
   const deleteTransaction = useDeleteTransaction();
+  const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -70,19 +107,48 @@ export default function Transactions() {
     });
   };
 
-  // Filter transactions by selected month/year
+  // Filter and sort transactions
   const filteredTransactions = useMemo(() => {
-    return (transactions || []).filter((t) => {
+    let result = (transactions || []).filter((t) => {
       const transactionDate = new Date(t.date);
       const matchesPeriod = 
         transactionDate.getMonth() === selectedMonth && 
         transactionDate.getFullYear() === selectedYear;
-      const matchesFilter = filter === "all" || t.type === filter;
+      const matchesType = filter === "all" || t.type === filter;
       const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             (t.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesPeriod && matchesFilter && matchesSearch;
+      const matchesCategory = categoryFilter === "all" || t.category_id === categoryFilter;
+      const matchesPaymentMethod = paymentMethodFilter === "all" || t.payment_method === paymentMethodFilter;
+      
+      return matchesPeriod && matchesType && matchesSearch && matchesCategory && matchesPaymentMethod;
     });
-  }, [transactions, selectedMonth, selectedYear, filter, searchQuery]);
+
+    // Sort
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "date":
+          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+          break;
+        case "amount":
+          comparison = Number(a.amount) - Number(b.amount);
+          break;
+        case "category":
+          comparison = (a.category?.name || "").localeCompare(b.category?.name || "");
+          break;
+      }
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    return result;
+  }, [transactions, selectedMonth, selectedYear, filter, searchQuery, categoryFilter, paymentMethodFilter, sortField, sortOrder]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredTransactions.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredTransactions, currentPage]);
 
   // Calculate stats for the filtered period
   const stats = useMemo(() => {
@@ -95,6 +161,15 @@ export default function Transactions() {
     return { totalIncome, totalExpense, balance: totalIncome - totalExpense };
   }, [filteredTransactions]);
 
+  // Get unique payment methods
+  const paymentMethods = useMemo(() => {
+    const methods = new Set<string>();
+    (transactions || []).forEach(t => {
+      if (t.payment_method) methods.add(t.payment_method);
+    });
+    return Array.from(methods);
+  }, [transactions]);
+
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
@@ -106,6 +181,43 @@ export default function Transactions() {
     setDeleteId(null);
   };
 
+  const handleCreate = () => {
+    setFormMode("create");
+    setSelectedTransaction(null);
+    setShowForm(true);
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setFormMode("edit");
+    setSelectedTransaction(transaction);
+    setShowForm(true);
+  };
+
+  const handleDuplicate = (transaction: Transaction) => {
+    setFormMode("duplicate");
+    setSelectedTransaction(transaction);
+    setShowForm(true);
+  };
+
+  const handleFormSubmit = async (data: CreateTransactionData) => {
+    if (formMode === "edit" && selectedTransaction) {
+      await updateTransaction.mutateAsync({ id: selectedTransaction.id, data });
+      toast.success("Transação atualizada com sucesso!");
+    } else {
+      await createTransaction.mutateAsync(data);
+      toast.success("Transação criada com sucesso!");
+    }
+  };
+
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("desc");
+    }
+  };
+
   const goToPreviousMonth = () => {
     if (selectedMonth === 0) {
       setSelectedMonth(11);
@@ -113,6 +225,7 @@ export default function Transactions() {
     } else {
       setSelectedMonth(prev => prev - 1);
     }
+    setCurrentPage(1);
   };
 
   const goToNextMonth = () => {
@@ -122,12 +235,14 @@ export default function Transactions() {
     } else {
       setSelectedMonth(prev => prev + 1);
     }
+    setCurrentPage(1);
   };
 
   const goToCurrentMonth = () => {
     setSelectedMonth(now.getMonth());
     setSelectedYear(now.getFullYear());
     setIsCalendarOpen(false);
+    setCurrentPage(1);
   };
 
   const exportToCSV = () => {
@@ -174,6 +289,16 @@ export default function Transactions() {
     return Array.from(years).sort((a, b) => b - a);
   }, [transactions]);
 
+  const clearFilters = () => {
+    setCategoryFilter("all");
+    setPaymentMethodFilter("all");
+    setFilter("all");
+    setSearchQuery("");
+    setIsFilterOpen(false);
+  };
+
+  const hasActiveFilters = categoryFilter !== "all" || paymentMethodFilter !== "all" || filter !== "all";
+
   return (
     <AppLayout>
       {/* Header */}
@@ -189,7 +314,7 @@ export default function Transactions() {
             <Download className="w-5 h-5 mr-2" />
             Exportar CSV
           </Button>
-          <Button className="btn-gradient" onClick={() => navigate("/add-transaction")}>
+          <Button className="btn-gradient" onClick={handleCreate}>
             <Plus className="w-5 h-5 mr-2" />
             Nova Transação
           </Button>
@@ -237,6 +362,7 @@ export default function Transactions() {
                       onClick={() => {
                         setSelectedMonth(index);
                         setIsCalendarOpen(false);
+                        setCurrentPage(1);
                       }}
                     >
                       {month.slice(0, 3)}
@@ -284,27 +410,117 @@ export default function Transactions() {
           <Input
             placeholder="Buscar transações..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="pl-10"
           />
         </div>
         
-        <div className="flex bg-muted rounded-lg p-1">
-          {(["all", "income", "expense"] as const).map((type) => (
-            <button
-              key={type}
-              onClick={() => setFilter(type)}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                filter === type
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {type === "all" ? "Todas" : type === "income" ? "Receitas" : "Despesas"}
-            </button>
-          ))}
+        <div className="flex gap-2">
+          {/* Advanced Filters */}
+          <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className={cn(hasActiveFilters && "border-primary text-primary")}>
+                <Filter className="w-4 h-4 mr-2" />
+                Filtros
+                {hasActiveFilters && (
+                  <span className="ml-2 w-2 h-2 rounded-full bg-primary" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-4" align="end">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Categoria</label>
+                  <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setCurrentPage(1); }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas</SelectItem>
+                      {categories?.map(cat => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.icon} {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Método de Pagamento</label>
+                  <Select value={paymentMethodFilter} onValueChange={(v) => { setPaymentMethodFilter(v); setCurrentPage(1); }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      {paymentMethods.map(pm => (
+                        <SelectItem key={pm} value={pm}>
+                          {pm === "pix" ? "PIX" : 
+                           pm === "credit" ? "Crédito" :
+                           pm === "debit" ? "Débito" :
+                           pm === "cash" ? "Dinheiro" :
+                           pm === "transfer" ? "Transferência" :
+                           pm === "boleto" ? "Boleto" : pm}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {hasActiveFilters && (
+                  <Button variant="ghost" className="w-full" onClick={clearFilters}>
+                    Limpar Filtros
+                  </Button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Type Filter */}
+          <div className="flex bg-muted rounded-lg p-1">
+            {(["all", "income", "expense"] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => { setFilter(type); setCurrentPage(1); }}
+                className={cn(
+                  "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                  filter === type
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {type === "all" ? "Todas" : type === "income" ? "Receitas" : "Despesas"}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* Sort Options */}
+      <div className="flex gap-2 mb-4 animate-fade-in" style={{ animationDelay: '280ms' }}>
+        <span className="text-sm text-muted-foreground flex items-center">Ordenar por:</span>
+        {([
+          { field: "date" as SortField, label: "Data" },
+          { field: "amount" as SortField, label: "Valor" },
+          { field: "category" as SortField, label: "Categoria" },
+        ]).map(({ field, label }) => (
+          <Button
+            key={field}
+            variant={sortField === field ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => toggleSort(field)}
+            className="gap-1"
+          >
+            {label}
+            {sortField === field && (
+              <ArrowUpDown className={cn("w-3 h-3", sortOrder === "asc" && "rotate-180")} />
+            )}
+          </Button>
+        ))}
       </div>
 
       {/* Transactions List */}
@@ -319,74 +535,174 @@ export default function Transactions() {
             <p className="text-sm">Não há transações para {MONTHS[selectedMonth]} de {selectedYear}</p>
           </div>
         ) : (
-          <div className="divide-y divide-border/50">
-            {filteredTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
-              >
+          <>
+            <div className="divide-y divide-border/50">
+              {paginatedTransactions.map((transaction) => (
                 <div
-                  className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                    transaction.type === "income"
-                      ? "bg-success/10"
-                      : "bg-destructive/10"
-                  )}
+                  key={transaction.id}
+                  className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group"
                 >
-                  {transaction.type === "income" ? (
-                    <ArrowDownLeft className="w-6 h-6 text-success" />
-                  ) : (
-                    <ArrowUpRight className="w-6 h-6 text-destructive" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">
-                    {transaction.description}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-sm text-muted-foreground">
-                      {transaction.category?.name || "Sem categoria"}
-                    </span>
-                    {transaction.payment_method && (
-                      <>
-                        <span className="text-muted-foreground/50">•</span>
-                        <span className="text-sm text-muted-foreground">{transaction.payment_method}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <p
+                  <div
                     className={cn(
-                      "font-semibold",
+                      "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
                       transaction.type === "income"
-                        ? "text-success"
-                        : "text-destructive"
+                        ? "bg-success/10"
+                        : "bg-destructive/10"
                     )}
                   >
-                    {transaction.type === "income" ? "+" : "-"}
-                    {formatCurrency(Number(transaction.amount))}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {formatDate(transaction.date)}
-                  </p>
-                </div>
+                    {transaction.category?.icon ? (
+                      <span className="text-2xl">{transaction.category.icon}</span>
+                    ) : transaction.type === "income" ? (
+                      <ArrowDownLeft className="w-6 h-6 text-success" />
+                    ) : (
+                      <ArrowUpRight className="w-6 h-6 text-destructive" />
+                    )}
+                  </div>
 
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => setDeleteId(transaction.id)}
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">
+                      {transaction.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-sm text-muted-foreground">
+                        {transaction.category?.name || "Sem categoria"}
+                      </span>
+                      {transaction.payment_method && (
+                        <>
+                          <span className="text-muted-foreground/50">•</span>
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {transaction.payment_method === "pix" ? "PIX" : 
+                             transaction.payment_method === "credit" ? "Crédito" :
+                             transaction.payment_method === "debit" ? "Débito" :
+                             transaction.payment_method === "cash" ? "Dinheiro" :
+                             transaction.payment_method}
+                          </span>
+                        </>
+                      )}
+                      {transaction.is_recurring && (
+                        <>
+                          <span className="text-muted-foreground/50">•</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                            Recorrente
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <p
+                      className={cn(
+                        "font-semibold",
+                        transaction.type === "income"
+                          ? "text-success"
+                          : "text-destructive"
+                      )}
+                    >
+                      {transaction.type === "income" ? "+" : "-"}
+                      {formatCurrency(Number(transaction.amount))}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(transaction.date)}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="shrink-0"
+                      onClick={() => handleEdit(transaction)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="shrink-0"
+                      onClick={() => handleDuplicate(transaction)}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setDeleteId(transaction.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between p-4 border-t border-border/50">
+                <p className="text-sm text-muted-foreground">
+                  Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} de {filteredTransactions.length}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "ghost"}
+                          size="sm"
+                          className="w-8 h-8 p-0"
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* Transaction Form Modal */}
+      <TransactionForm
+        open={showForm}
+        onOpenChange={setShowForm}
+        onSubmit={handleFormSubmit}
+        initialData={selectedTransaction}
+        isPending={createTransaction.isPending || updateTransaction.isPending}
+        mode={formMode}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

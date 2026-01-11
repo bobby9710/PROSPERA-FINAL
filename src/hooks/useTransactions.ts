@@ -251,3 +251,70 @@ export function useDeleteTransaction() {
     },
   });
 }
+
+export function useUpdateTransaction() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateTransactionData> }) => {
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          ...data,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      toast({
+        title: "Transação atualizada",
+        description: "A transação foi atualizada com sucesso.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao atualizar transação",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useCardTransactions(cardId: string | null, month?: number, year?: number) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["transactions", "card", cardId, month, year, user?.id],
+    queryFn: async () => {
+      if (!user || !cardId) return [];
+      
+      const now = new Date();
+      const targetMonth = month ?? now.getMonth();
+      const targetYear = year ?? now.getFullYear();
+      
+      const startOfMonth = new Date(targetYear, targetMonth, 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(targetYear, targetMonth + 1, 0).toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select(`
+          *,
+          category:categories(id, name, icon, color)
+        `)
+        .eq("user_id", user.id)
+        .eq("credit_card_id", cardId)
+        .gte("date", startOfMonth)
+        .lte("date", endOfMonth)
+        .order("date", { ascending: false });
+
+      if (error) throw error;
+      return data as Transaction[];
+    },
+    enabled: !!user && !!cardId,
+  });
+}

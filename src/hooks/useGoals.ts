@@ -194,3 +194,71 @@ export function useDeleteGoal() {
     },
   });
 }
+
+export function useUpdateGoalStatus() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "active" | "completed" | "cancelled" }) => {
+      const { error } = await supabase
+        .from("goals")
+        .update({ 
+          status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      if (status === "completed") {
+        toast({
+          title: "🎉 Meta concluída!",
+          description: "Parabéns por atingir sua meta!",
+        });
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao atualizar meta",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useUpdateGoal() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateGoalData> }) => {
+      const { error } = await supabase
+        .from("goals")
+        .update({
+          ...data,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      toast({
+        title: "Meta atualizada",
+        description: "A meta foi atualizada com sucesso.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao atualizar meta",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}

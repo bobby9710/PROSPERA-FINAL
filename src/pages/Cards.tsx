@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Plus, CreditCard, Calendar, AlertCircle, CheckCircle2, Trash2, Loader2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, CreditCard, Trash2, Loader2, Receipt, History, ChevronRight, Eye } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useCreditCards, useCreditCardStats, useCreateCreditCard, useDeleteCreditCard } from "@/hooks/useCreditCards";
+import { useCreditCards, useCreditCardStats, useCreateCreditCard, useDeleteCreditCard, CreditCard as CreditCardType } from "@/hooks/useCreditCards";
+import { useCardTransactions } from "@/hooks/useTransactions";
 import {
   Dialog,
   DialogContent,
@@ -30,12 +31,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CardBillDetails } from "@/components/cards/CardBillDetails";
+import { CardBillHistory } from "@/components/cards/CardBillHistory";
 import { toast } from "sonner";
 
-const cardColors = ["#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#3B82F6", "#EF4444"];
+const cardColors = ["#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#3B82F6", "#EF4444", "#6366F1", "#14B8A6"];
+
+const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
 export default function Cards() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showBillDetails, setShowBillDetails] = useState(false);
+  const [showBillHistory, setShowBillHistory] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<(CreditCardType & { used: number; available: number; currentBill: number }) | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
   // Form state
@@ -50,6 +58,9 @@ export default function Cards() {
   const { data: cards, isLoading } = useCreditCardStats();
   const createCard = useCreateCreditCard();
   const deleteCard = useDeleteCreditCard();
+
+  // Fetch transactions for selected card
+  const { data: cardTransactions = [] } = useCardTransactions(selectedCard?.id || null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -68,15 +79,38 @@ export default function Cards() {
         return "ELO";
       case "amex":
         return "AMEX";
+      case "hipercard":
+        return "HIPER";
       default:
         return brand.toUpperCase();
     }
+  };
+
+  // Generate mock history for demonstration
+  const generateHistory = (card: CreditCardType & { used: number }) => {
+    const history = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      history.push({
+        month: MONTHS[date.getMonth()],
+        year: date.getFullYear(),
+        amount: i === 0 ? card.used : Math.random() * Number(card.credit_limit) * 0.6,
+        status: i === 0 ? "pending" as const : "paid" as const,
+      });
+    }
+    return history;
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !lastDigits || !creditLimit || !closingDay || !dueDay) {
       toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+
+    if (lastDigits.length !== 4) {
+      toast.error("Os últimos 4 dígitos devem ter exatamente 4 números");
       return;
     }
 
@@ -119,6 +153,30 @@ export default function Cards() {
     setColor(cardColors[0]);
   };
 
+  const openBillDetails = (card: CreditCardType & { used: number; available: number; currentBill: number }) => {
+    setSelectedCard(card);
+    setShowBillDetails(true);
+  };
+
+  const openBillHistory = (card: CreditCardType & { used: number; available: number; currentBill: number }) => {
+    setSelectedCard(card);
+    setShowBillHistory(true);
+  };
+
+  // Summary calculations
+  const totalLimit = useMemo(() => 
+    (cards || []).reduce((acc, c) => acc + Number(c.credit_limit), 0), 
+    [cards]
+  );
+  const totalUsed = useMemo(() => 
+    (cards || []).reduce((acc, c) => acc + c.used, 0), 
+    [cards]
+  );
+  const totalAvailable = useMemo(() => 
+    (cards || []).reduce((acc, c) => acc + c.available, 0), 
+    [cards]
+  );
+
   return (
     <AppLayout>
       {/* Header */}
@@ -139,15 +197,20 @@ export default function Cards() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div className="stat-card animate-fade-in" style={{ animationDelay: '100ms' }}>
           <p className="text-sm text-muted-foreground mb-1">Limite Total</p>
-          <p className="text-xl font-bold">{formatCurrency((cards || []).reduce((acc, c) => acc + c.credit_limit, 0))}</p>
+          <p className="text-xl font-bold">{formatCurrency(totalLimit)}</p>
         </div>
         <div className="stat-card animate-fade-in" style={{ animationDelay: '150ms' }}>
           <p className="text-sm text-muted-foreground mb-1">Utilizado</p>
-          <p className="text-xl font-bold text-primary">{formatCurrency((cards || []).reduce((acc, c) => acc + c.used, 0))}</p>
+          <p className="text-xl font-bold text-primary">{formatCurrency(totalUsed)}</p>
+          {totalLimit > 0 && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {((totalUsed / totalLimit) * 100).toFixed(0)}% do limite
+            </p>
+          )}
         </div>
         <div className="stat-card animate-fade-in" style={{ animationDelay: '200ms' }}>
           <p className="text-sm text-muted-foreground mb-1">Disponível</p>
-          <p className="text-xl font-bold text-success">{formatCurrency((cards || []).reduce((acc, c) => acc + c.available, 0))}</p>
+          <p className="text-xl font-bold text-success">{formatCurrency(totalAvailable)}</p>
         </div>
       </div>
 
@@ -165,8 +228,7 @@ export default function Cards() {
         /* Cards Grid */
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {(cards || []).map((card, index) => {
-            const usagePercent = (card.credit_limit > 0) ? 0 : 0; // Will calculate from transactions
-            const available = card.credit_limit;
+            const usagePercent = card.credit_limit > 0 ? (card.used / Number(card.credit_limit)) * 100 : 0;
 
             return (
               <div
@@ -176,10 +238,11 @@ export default function Cards() {
               >
                 {/* Card Visual */}
                 <div
-                  className="relative rounded-2xl p-6 text-white mb-4 overflow-hidden"
+                  className="relative rounded-2xl p-6 text-white mb-4 overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform"
                   style={{
                     background: `linear-gradient(135deg, ${card.color} 0%, ${card.color}dd 100%)`,
                   }}
+                  onClick={() => openBillDetails(card)}
                 >
                   <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20" />
                   <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16" />
@@ -215,33 +278,78 @@ export default function Cards() {
                 {/* Card Details */}
                 <div className="bg-card rounded-2xl border border-border/50 shadow-card p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Detalhes</h3>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => setDeleteId(card.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Fechamento</p>
-                        <p className="font-semibold">Dia {card.closing_day}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">Vencimento</p>
-                        <p className="font-semibold">Dia {card.due_day}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Limite</p>
-                        <p className="font-semibold">{formatCurrency(card.credit_limit)}</p>
-                      </div>
+                    <h3 className="font-semibold">Fatura Atual</h3>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openBillDetails(card)}
+                        title="Ver detalhes da fatura"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openBillHistory(card)}
+                        title="Ver histórico"
+                      >
+                        <History className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setDeleteId(card.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
+
+                  {/* Usage Progress */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-muted-foreground">Uso do limite</span>
+                      <span className="font-semibold">{usagePercent.toFixed(0)}%</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          usagePercent >= 80 && "bg-destructive",
+                          usagePercent >= 50 && usagePercent < 80 && "bg-warning",
+                          usagePercent < 50 && "bg-success"
+                        )}
+                        style={{ width: `${Math.min(usagePercent, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Fatura</p>
+                      <p className="font-semibold text-primary">{formatCurrency(card.used)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">Disponível</p>
+                      <p className="font-semibold text-success">{formatCurrency(card.available)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Limite</p>
+                      <p className="font-semibold">{formatCurrency(Number(card.credit_limit))}</p>
+                    </div>
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-4"
+                    onClick={() => openBillDetails(card)}
+                  >
+                    <Receipt className="w-4 h-4 mr-2" />
+                    Ver Fatura Completa
+                    <ChevronRight className="w-4 h-4 ml-auto" />
+                  </Button>
                 </div>
               </div>
             );
@@ -251,7 +359,7 @@ export default function Cards() {
 
       {/* Create Card Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Novo Cartão</DialogTitle>
             <DialogDescription>
@@ -260,7 +368,7 @@ export default function Cards() {
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="space-y-2">
-              <Label>Nome do cartão</Label>
+              <Label>Nome do cartão *</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -271,7 +379,7 @@ export default function Cards() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Últimos 4 dígitos</Label>
+                <Label>Últimos 4 dígitos *</Label>
                 <Input
                   value={lastDigits}
                   onChange={(e) => setLastDigits(e.target.value.replace(/\D/g, '').slice(0, 4))}
@@ -291,13 +399,14 @@ export default function Cards() {
                     <SelectItem value="mastercard">Mastercard</SelectItem>
                     <SelectItem value="elo">Elo</SelectItem>
                     <SelectItem value="amex">Amex</SelectItem>
+                    <SelectItem value="hipercard">Hipercard</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Limite de crédito</Label>
+              <Label>Limite de crédito *</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   R$
@@ -309,6 +418,7 @@ export default function Cards() {
                   placeholder="0,00"
                   className="pl-10"
                   step="0.01"
+                  min="0.01"
                   required
                 />
               </div>
@@ -316,7 +426,7 @@ export default function Cards() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Dia de fechamento</Label>
+                <Label>Dia de fechamento *</Label>
                 <Input
                   type="number"
                   value={closingDay}
@@ -328,7 +438,7 @@ export default function Cards() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Dia de vencimento</Label>
+                <Label>Dia de vencimento *</Label>
                 <Input
                   type="number"
                   value={dueDay}
@@ -366,6 +476,32 @@ export default function Cards() {
         </DialogContent>
       </Dialog>
 
+      {/* Bill Details Modal */}
+      {selectedCard && (
+        <CardBillDetails
+          open={showBillDetails}
+          onOpenChange={setShowBillDetails}
+          card={selectedCard}
+          transactions={cardTransactions.map(t => ({
+            id: t.id,
+            description: t.description,
+            amount: Number(t.amount),
+            date: t.date,
+            category: t.category,
+          }))}
+        />
+      )}
+
+      {/* Bill History Modal */}
+      {selectedCard && (
+        <CardBillHistory
+          open={showBillHistory}
+          onOpenChange={setShowBillHistory}
+          card={selectedCard}
+          history={generateHistory(selectedCard)}
+        />
+      )}
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
@@ -373,6 +509,7 @@ export default function Cards() {
             <AlertDialogTitle>Excluir cartão?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação não pode ser desfeita. O cartão será permanentemente excluído.
+              As transações vinculadas a este cartão não serão excluídas.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
