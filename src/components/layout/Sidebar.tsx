@@ -19,6 +19,8 @@ import {
   Trophy,
   FileText,
   Zap,
+  BookOpen,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,6 +41,8 @@ const navItems = [
   { icon: BarChart3, label: "Insights", href: "/insights", premium: true },
   { icon: FileText, label: "Relatórios", href: "/reports", premium: true },
   { icon: Zap, label: "Automações", href: "/automations", premium: true },
+  { icon: BookOpen, label: "Educação", href: "/education", premium: true },
+  { icon: User, label: "Perfil Financeiro", href: "/financial-profile" },
 ];
 
 const bottomNavItems = [

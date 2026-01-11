@@ -22,6 +22,9 @@ import Timeline from "./pages/Timeline";
 import Challenges from "./pages/Challenges";
 import Reports from "./pages/Reports";
 import Automations from "./pages/Automations";
+import Education from "./pages/Education";
+import FinancialProfile from "./pages/FinancialProfile";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -160,6 +163,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Automations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/education"
+              element={
+                <ProtectedRoute>
+                  <Education />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/financial-profile"
+              element={
+                <ProtectedRoute>
+                  <FinancialProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
                 </ProtectedRoute>
               }
             />

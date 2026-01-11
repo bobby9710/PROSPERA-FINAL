@@ -5,16 +5,16 @@ import { toast } from "@/hooks/use-toast";
 
 export interface EducationContent {
   id: string;
-  type: 'article' | 'video' | 'quiz';
+  type: string;
   title: string;
-  description?: string;
-  content?: string;
-  thumbnail_url?: string;
-  video_url?: string;
-  quiz_data?: QuizQuestion[];
+  description?: string | null;
+  content?: string | null;
+  thumbnail_url?: string | null;
+  video_url?: string | null;
+  quiz_data?: unknown;
   category: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  duration_minutes?: number;
+  difficulty: string;
+  duration_minutes?: number | null;
   is_premium: boolean;
   order_index: number;
   created_at: string;
