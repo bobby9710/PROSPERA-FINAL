@@ -19,6 +19,9 @@ import Insights from "./pages/Insights";
 import Simulator from "./pages/Simulator";
 import Scanner from "./pages/Scanner";
 import Timeline from "./pages/Timeline";
+import Challenges from "./pages/Challenges";
+import Reports from "./pages/Reports";
+import Automations from "./pages/Automations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -133,6 +136,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Timeline />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/challenges"
+              element={
+                <ProtectedRoute>
+                  <Challenges />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/automations"
+              element={
+                <ProtectedRoute>
+                  <Automations />
                 </ProtectedRoute>
               }
             />

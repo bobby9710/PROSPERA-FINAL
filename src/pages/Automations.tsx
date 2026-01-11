@@ -32,8 +32,8 @@ const EXAMPLE_RULES = [
 
 export default function Automations() {
   const { rules, loadingRules, createRule, toggleRule, deleteRule } = useAutomations();
-  const { categories } = useCategories();
-  const { goals } = useGoals();
+  const { data: categories = [] } = useCategories();
+  const { data: goals = [] } = useGoals();
   const [isOpen, setIsOpen] = useState(false);
   const [newRule, setNewRule] = useState({
     name: "",

@@ -45,7 +45,7 @@ export default function Reports() {
     exportToPDF, 
     exportToExcel 
   } = useReports();
-  const { categories } = useCategories();
+  const { data: categories = [] } = useCategories();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);

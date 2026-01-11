@@ -25,8 +25,8 @@ const CHALLENGE_TYPES = [
 
 export default function Challenges() {
   const { challenges, loadingChallenges, achievements, badges, badgeInfo, createChallenge, completeChallenge, deleteChallenge } = useChallenges();
-  const { categories } = useCategories();
-  const { goals } = useGoals();
+  const { data: categories = [] } = useCategories();
+  const { data: goals = [] } = useGoals();
   const [isOpen, setIsOpen] = useState(false);
   const [newChallenge, setNewChallenge] = useState({
     title: "",
