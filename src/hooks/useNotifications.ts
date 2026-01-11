@@ -63,10 +63,15 @@ export function useNotifications() {
       if (!user) throw new Error("User not authenticated");
       const { data, error } = await supabase
         .from("notifications")
-        .insert({
+        .insert([{
           user_id: user.id,
-          ...notification,
-        })
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          action_url: notification.action_url,
+          action_label: notification.action_label,
+          metadata: notification.metadata ? JSON.parse(JSON.stringify(notification.metadata)) : {},
+        }])
         .select()
         .single();
       
