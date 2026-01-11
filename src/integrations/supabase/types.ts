@@ -313,6 +313,57 @@ export type Database = {
         }
         Relationships: []
       }
+      education_content: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          duration_minutes: number | null
+          id: string
+          is_premium: boolean | null
+          order_index: number | null
+          quiz_data: Json | null
+          thumbnail_url: string | null
+          title: string
+          type: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_premium?: boolean | null
+          order_index?: number | null
+          quiz_data?: Json | null
+          thumbnail_url?: string | null
+          title: string
+          type: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_premium?: boolean | null
+          order_index?: number | null
+          quiz_data?: Json | null
+          thumbnail_url?: string | null
+          title?: string
+          type?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       financial_insights: {
         Row: {
           content: Json
@@ -340,6 +391,75 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      financial_profiles: {
+        Row: {
+          created_at: string
+          debts: number | null
+          dependents: number | null
+          emergency_fund: number | null
+          fixed_expenses: number | null
+          id: string
+          investments: number | null
+          monthly_income: number | null
+          risk_profile: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          debts?: number | null
+          dependents?: number | null
+          emergency_fund?: number | null
+          fixed_expenses?: number | null
+          id?: string
+          investments?: number | null
+          monthly_income?: number | null
+          risk_profile?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          debts?: number | null
+          dependents?: number | null
+          emergency_fund?: number | null
+          fixed_expenses?: number | null
+          id?: string
+          investments?: number | null
+          monthly_income?: number | null
+          risk_profile?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      glossary_terms: {
+        Row: {
+          category: string | null
+          created_at: string
+          definition: string
+          id: string
+          related_terms: string[] | null
+          term: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          definition: string
+          id?: string
+          related_terms?: string[] | null
+          term: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          definition?: string
+          id?: string
+          related_terms?: string[] | null
+          term?: string
         }
         Relationships: []
       }
@@ -483,6 +603,45 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -509,6 +668,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          answers: Json
+          completed_at: string
+          content_id: string
+          id: string
+          max_score: number
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string
+          content_id: string
+          id?: string
+          max_score: number
+          score: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          content_id?: string
+          id?: string
+          max_score?: number
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "education_content"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
