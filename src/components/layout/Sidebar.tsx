@@ -11,6 +11,11 @@ import {
   Sparkles,
   LogOut,
   Tag,
+  Building2,
+  BarChart3,
+  Calculator,
+  Camera,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,11 +24,15 @@ import { useToast } from "@/hooks/use-toast";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: ArrowUpDown, label: "Transações", href: "/transactions" },
+  { icon: Clock, label: "Linha do Tempo", href: "/timeline" },
   { icon: Target, label: "Metas", href: "/goals" },
   { icon: CreditCard, label: "Cartões", href: "/cards" },
   { icon: Tag, label: "Categorias", href: "/categories" },
   { icon: MessageSquare, label: "Assistente IA", href: "/assistant" },
-  { icon: TrendingUp, label: "Insights", href: "/insights", premium: true },
+  { icon: Calculator, label: "Simulador", href: "/simulator" },
+  { icon: Camera, label: "Scanner", href: "/scanner", premium: true },
+  { icon: Building2, label: "Open Finance", href: "/open-finance", premium: true },
+  { icon: BarChart3, label: "Insights", href: "/insights", premium: true },
 ];
 
 const bottomNavItems = [
