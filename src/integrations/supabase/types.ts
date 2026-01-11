@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      automation_rules: {
+        Row: {
+          action_type: string
+          action_value: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          trigger_type: string
+          trigger_value: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          action_value?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          trigger_type: string
+          trigger_value?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          action_value?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          trigger_type?: string
+          trigger_value?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      badges: {
+        Row: {
+          badge_type: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_type: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_type?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bank_connections: {
         Row: {
           account_number: string | null
@@ -82,6 +142,75 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      challenges: {
+        Row: {
+          created_at: string
+          current_progress: number
+          description: string | null
+          end_date: string
+          id: string
+          points_reward: number
+          start_date: string
+          status: string
+          target_category_id: string | null
+          target_goal_id: string | null
+          target_value: number | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_progress?: number
+          description?: string | null
+          end_date: string
+          id?: string
+          points_reward?: number
+          start_date?: string
+          status?: string
+          target_category_id?: string | null
+          target_goal_id?: string | null
+          target_value?: number | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_progress?: number
+          description?: string | null
+          end_date?: string
+          id?: string
+          points_reward?: number
+          start_date?: string
+          status?: string
+          target_category_id?: string | null
+          target_goal_id?: string | null
+          target_value?: number | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenges_target_category_id_fkey"
+            columns: ["target_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenges_target_goal_id_fkey"
+            columns: ["target_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_conversations: {
         Row: {
@@ -443,6 +572,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_achievements: {
+        Row: {
+          created_at: string
+          id: string
+          level: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
