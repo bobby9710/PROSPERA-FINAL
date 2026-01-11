@@ -14,6 +14,11 @@ import Assistant from "./pages/Assistant";
 import Profile from "./pages/Profile";
 import AddTransaction from "./pages/AddTransaction";
 import Categories from "./pages/Categories";
+import OpenFinance from "./pages/OpenFinance";
+import Insights from "./pages/Insights";
+import Simulator from "./pages/Simulator";
+import Scanner from "./pages/Scanner";
+import Timeline from "./pages/Timeline";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -88,6 +93,46 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Categories />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/open-finance"
+              element={
+                <ProtectedRoute>
+                  <OpenFinance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/insights"
+              element={
+                <ProtectedRoute>
+                  <Insights />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/simulator"
+              element={
+                <ProtectedRoute>
+                  <Simulator />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/scanner"
+              element={
+                <ProtectedRoute>
+                  <Scanner />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/timeline"
+              element={
+                <ProtectedRoute>
+                  <Timeline />
                 </ProtectedRoute>
               }
             />
