@@ -123,6 +123,36 @@ $$;
 SET default_table_access_method = heap;
 
 --
+-- Name: automation_rules; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.automation_rules (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    name text NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    trigger_type text NOT NULL,
+    trigger_value text,
+    action_type text NOT NULL,
+    action_value text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: badges; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.badges (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    badge_type text NOT NULL,
+    earned_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: bank_connections; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -154,6 +184,29 @@ CREATE TABLE public.categories (
     is_default boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT categories_type_check CHECK ((type = ANY (ARRAY['income'::text, 'expense'::text])))
+);
+
+
+--
+-- Name: challenges; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.challenges (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    title text NOT NULL,
+    description text,
+    type text NOT NULL,
+    target_value numeric,
+    target_category_id uuid,
+    target_goal_id uuid,
+    start_date date DEFAULT CURRENT_DATE NOT NULL,
+    end_date date NOT NULL,
+    current_progress numeric DEFAULT 0 NOT NULL,
+    status text DEFAULT 'active'::text NOT NULL,
+    points_reward integer DEFAULT 100 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -321,6 +374,44 @@ CREATE TABLE public.transactions (
 
 
 --
+-- Name: user_achievements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_achievements (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    total_points integer DEFAULT 0 NOT NULL,
+    level integer DEFAULT 1 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: automation_rules automation_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.automation_rules
+    ADD CONSTRAINT automation_rules_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: badges badges_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.badges
+    ADD CONSTRAINT badges_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: badges badges_user_id_badge_type_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.badges
+    ADD CONSTRAINT badges_user_id_badge_type_key UNIQUE (user_id, badge_type);
+
+
+--
 -- Name: bank_connections bank_connections_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -334,6 +425,14 @@ ALTER TABLE ONLY public.bank_connections
 
 ALTER TABLE ONLY public.categories
     ADD CONSTRAINT categories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: challenges challenges_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.challenges
+    ADD CONSTRAINT challenges_pkey PRIMARY KEY (id);
 
 
 --
@@ -417,6 +516,22 @@ ALTER TABLE ONLY public.transactions
 
 
 --
+-- Name: user_achievements user_achievements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_achievements
+    ADD CONSTRAINT user_achievements_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_achievements user_achievements_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_achievements
+    ADD CONSTRAINT user_achievements_user_id_key UNIQUE (user_id);
+
+
+--
 -- Name: idx_chat_conversations_user; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -459,10 +574,24 @@ CREATE TRIGGER on_goal_contribution AFTER INSERT ON public.goal_contributions FO
 
 
 --
+-- Name: automation_rules update_automation_rules_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_automation_rules_updated_at BEFORE UPDATE ON public.automation_rules FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: bank_connections update_bank_connections_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_bank_connections_updated_at BEFORE UPDATE ON public.bank_connections FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: challenges update_challenges_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_challenges_updated_at BEFORE UPDATE ON public.challenges FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
@@ -501,11 +630,34 @@ CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON public.transactio
 
 
 --
+-- Name: user_achievements update_user_achievements_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_user_achievements_updated_at BEFORE UPDATE ON public.user_achievements FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: categories categories_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.categories
     ADD CONSTRAINT categories_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: challenges challenges_target_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.challenges
+    ADD CONSTRAINT challenges_target_category_id_fkey FOREIGN KEY (target_category_id) REFERENCES public.categories(id) ON DELETE SET NULL;
+
+
+--
+-- Name: challenges challenges_target_goal_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.challenges
+    ADD CONSTRAINT challenges_target_goal_id_fkey FOREIGN KEY (target_goal_id) REFERENCES public.goals(id) ON DELETE SET NULL;
 
 
 --
@@ -597,10 +749,38 @@ ALTER TABLE ONLY public.transactions
 
 
 --
+-- Name: user_achievements Users can create their own achievements; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own achievements" ON public.user_achievements FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: automation_rules Users can create their own automation rules; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own automation rules" ON public.automation_rules FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: badges Users can create their own badges; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own badges" ON public.badges FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
 -- Name: bank_connections Users can create their own bank connections; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Users can create their own bank connections" ON public.bank_connections FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: challenges Users can create their own challenges; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own challenges" ON public.challenges FOR INSERT WITH CHECK ((auth.uid() = user_id));
 
 
 --
@@ -667,10 +847,24 @@ CREATE POLICY "Users can delete own transactions" ON public.transactions FOR DEL
 
 
 --
+-- Name: automation_rules Users can delete their own automation rules; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own automation rules" ON public.automation_rules FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
 -- Name: bank_connections Users can delete their own bank connections; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Users can delete their own bank connections" ON public.bank_connections FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: challenges Users can delete their own challenges; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own challenges" ON public.challenges FOR DELETE USING ((auth.uid() = user_id));
 
 
 --
@@ -779,10 +973,31 @@ CREATE POLICY "Users can update own transactions" ON public.transactions FOR UPD
 
 
 --
+-- Name: user_achievements Users can update their own achievements; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own achievements" ON public.user_achievements FOR UPDATE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: automation_rules Users can update their own automation rules; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own automation rules" ON public.automation_rules FOR UPDATE USING ((auth.uid() = user_id));
+
+
+--
 -- Name: bank_connections Users can update their own bank connections; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Users can update their own bank connections" ON public.bank_connections FOR UPDATE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: challenges Users can update their own challenges; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own challenges" ON public.challenges FOR UPDATE USING ((auth.uid() = user_id));
 
 
 --
@@ -842,10 +1057,38 @@ CREATE POLICY "Users can view own transactions" ON public.transactions FOR SELEC
 
 
 --
+-- Name: user_achievements Users can view their own achievements; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own achievements" ON public.user_achievements FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: automation_rules Users can view their own automation rules; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own automation rules" ON public.automation_rules FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: badges Users can view their own badges; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own badges" ON public.badges FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
 -- Name: bank_connections Users can view their own bank connections; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Users can view their own bank connections" ON public.bank_connections FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: challenges Users can view their own challenges; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own challenges" ON public.challenges FOR SELECT USING ((auth.uid() = user_id));
 
 
 --
@@ -877,6 +1120,18 @@ CREATE POLICY "Users can view their own messages" ON public.chat_messages FOR SE
 
 
 --
+-- Name: automation_rules; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.automation_rules ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: badges; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.badges ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: bank_connections; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -887,6 +1142,12 @@ ALTER TABLE public.bank_connections ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: challenges; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.challenges ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: chat_conversations; Type: ROW SECURITY; Schema: public; Owner: -
@@ -941,6 +1202,12 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: user_achievements; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
 
 --
 -- PostgreSQL database dump complete
