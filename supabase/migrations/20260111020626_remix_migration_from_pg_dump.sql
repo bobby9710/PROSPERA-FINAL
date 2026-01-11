@@ -123,6 +123,24 @@ $$;
 SET default_table_access_method = heap;
 
 --
+-- Name: bank_connections; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bank_connections (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    bank_code text NOT NULL,
+    bank_name text NOT NULL,
+    account_number text,
+    status text DEFAULT 'pending'::text NOT NULL,
+    last_sync_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT bank_connections_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'connected'::text, 'disconnected'::text, 'error'::text])))
+);
+
+
+--
 -- Name: categories; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -136,6 +154,34 @@ CREATE TABLE public.categories (
     is_default boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT categories_type_check CHECK ((type = ANY (ARRAY['income'::text, 'expense'::text])))
+);
+
+
+--
+-- Name: chat_conversations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chat_conversations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    title text DEFAULT 'Nova conversa'::text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: chat_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chat_messages (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    conversation_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    role text NOT NULL,
+    content text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT chat_messages_role_check CHECK ((role = ANY (ARRAY['user'::text, 'assistant'::text])))
 );
 
 
@@ -158,6 +204,22 @@ CREATE TABLE public.credit_cards (
     CONSTRAINT credit_cards_closing_day_check CHECK (((closing_day >= 1) AND (closing_day <= 31))),
     CONSTRAINT credit_cards_credit_limit_check CHECK ((credit_limit > (0)::numeric)),
     CONSTRAINT credit_cards_due_day_check CHECK (((due_day >= 1) AND (due_day <= 31)))
+);
+
+
+--
+-- Name: financial_insights; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.financial_insights (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    type text NOT NULL,
+    period text,
+    title text NOT NULL,
+    content jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT financial_insights_type_check CHECK ((type = ANY (ARRAY['monthly_analysis'::text, 'spending_pattern'::text, 'recommendation'::text])))
 );
 
 
@@ -201,6 +263,27 @@ CREATE TABLE public.goals (
 
 
 --
+-- Name: imported_transactions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.imported_transactions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    bank_connection_id uuid,
+    external_id text NOT NULL,
+    amount numeric(12,2) NOT NULL,
+    description text NOT NULL,
+    date date NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    matched_transaction_id uuid,
+    match_score integer,
+    raw_data jsonb,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT imported_transactions_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'matched'::text, 'imported'::text, 'ignored'::text])))
+);
+
+
+--
 -- Name: profiles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -238,6 +321,14 @@ CREATE TABLE public.transactions (
 
 
 --
+-- Name: bank_connections bank_connections_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bank_connections
+    ADD CONSTRAINT bank_connections_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -246,11 +337,35 @@ ALTER TABLE ONLY public.categories
 
 
 --
+-- Name: chat_conversations chat_conversations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_conversations
+    ADD CONSTRAINT chat_conversations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: chat_messages chat_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: credit_cards credit_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.credit_cards
     ADD CONSTRAINT credit_cards_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: financial_insights financial_insights_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.financial_insights
+    ADD CONSTRAINT financial_insights_pkey PRIMARY KEY (id);
 
 
 --
@@ -267,6 +382,14 @@ ALTER TABLE ONLY public.goal_contributions
 
 ALTER TABLE ONLY public.goals
     ADD CONSTRAINT goals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: imported_transactions imported_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.imported_transactions
+    ADD CONSTRAINT imported_transactions_pkey PRIMARY KEY (id);
 
 
 --
@@ -294,10 +417,59 @@ ALTER TABLE ONLY public.transactions
 
 
 --
+-- Name: idx_chat_conversations_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_chat_conversations_user ON public.chat_conversations USING btree (user_id);
+
+
+--
+-- Name: idx_chat_messages_conversation; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_chat_messages_conversation ON public.chat_messages USING btree (conversation_id);
+
+
+--
+-- Name: idx_financial_insights_user_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_financial_insights_user_type ON public.financial_insights USING btree (user_id, type);
+
+
+--
+-- Name: idx_imported_transactions_bank; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_imported_transactions_bank ON public.imported_transactions USING btree (bank_connection_id);
+
+
+--
+-- Name: idx_imported_transactions_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_imported_transactions_status ON public.imported_transactions USING btree (status);
+
+
+--
 -- Name: goal_contributions on_goal_contribution; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_goal_contribution AFTER INSERT ON public.goal_contributions FOR EACH ROW EXECUTE FUNCTION public.update_goal_amount();
+
+
+--
+-- Name: bank_connections update_bank_connections_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_bank_connections_updated_at BEFORE UPDATE ON public.bank_connections FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: chat_conversations update_chat_conversations_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_chat_conversations_updated_at BEFORE UPDATE ON public.chat_conversations FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
@@ -334,6 +506,14 @@ CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON public.transactio
 
 ALTER TABLE ONLY public.categories
     ADD CONSTRAINT categories_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: chat_messages chat_messages_conversation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_messages
+    ADD CONSTRAINT chat_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.chat_conversations(id) ON DELETE CASCADE;
 
 
 --
@@ -377,6 +557,22 @@ ALTER TABLE ONLY public.goals
 
 
 --
+-- Name: imported_transactions imported_transactions_bank_connection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.imported_transactions
+    ADD CONSTRAINT imported_transactions_bank_connection_id_fkey FOREIGN KEY (bank_connection_id) REFERENCES public.bank_connections(id) ON DELETE CASCADE;
+
+
+--
+-- Name: imported_transactions imported_transactions_matched_transaction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.imported_transactions
+    ADD CONSTRAINT imported_transactions_matched_transaction_id_fkey FOREIGN KEY (matched_transaction_id) REFERENCES public.transactions(id) ON DELETE SET NULL;
+
+
+--
 -- Name: profiles profiles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -398,6 +594,41 @@ ALTER TABLE ONLY public.transactions
 
 ALTER TABLE ONLY public.transactions
     ADD CONSTRAINT transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: bank_connections Users can create their own bank connections; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own bank connections" ON public.bank_connections FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: chat_conversations Users can create their own conversations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own conversations" ON public.chat_conversations FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: imported_transactions Users can create their own imported transactions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own imported transactions" ON public.imported_transactions FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: financial_insights Users can create their own insights; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own insights" ON public.financial_insights FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: chat_messages Users can create their own messages; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can create their own messages" ON public.chat_messages FOR INSERT WITH CHECK ((auth.uid() = user_id));
 
 
 --
@@ -433,6 +664,41 @@ CREATE POLICY "Users can delete own goals" ON public.goals FOR DELETE USING ((au
 --
 
 CREATE POLICY "Users can delete own transactions" ON public.transactions FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: bank_connections Users can delete their own bank connections; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own bank connections" ON public.bank_connections FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: chat_conversations Users can delete their own conversations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own conversations" ON public.chat_conversations FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: imported_transactions Users can delete their own imported transactions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own imported transactions" ON public.imported_transactions FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: financial_insights Users can delete their own insights; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own insights" ON public.financial_insights FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: chat_messages Users can delete their own messages; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own messages" ON public.chat_messages FOR DELETE USING ((auth.uid() = user_id));
 
 
 --
@@ -513,6 +779,27 @@ CREATE POLICY "Users can update own transactions" ON public.transactions FOR UPD
 
 
 --
+-- Name: bank_connections Users can update their own bank connections; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own bank connections" ON public.bank_connections FOR UPDATE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: chat_conversations Users can update their own conversations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own conversations" ON public.chat_conversations FOR UPDATE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: imported_transactions Users can update their own imported transactions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own imported transactions" ON public.imported_transactions FOR UPDATE USING ((auth.uid() = user_id));
+
+
+--
 -- Name: credit_cards Users can view own cards; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -555,16 +842,75 @@ CREATE POLICY "Users can view own transactions" ON public.transactions FOR SELEC
 
 
 --
+-- Name: bank_connections Users can view their own bank connections; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own bank connections" ON public.bank_connections FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: chat_conversations Users can view their own conversations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own conversations" ON public.chat_conversations FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: imported_transactions Users can view their own imported transactions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own imported transactions" ON public.imported_transactions FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: financial_insights Users can view their own insights; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own insights" ON public.financial_insights FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: chat_messages Users can view their own messages; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own messages" ON public.chat_messages FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: bank_connections; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.bank_connections ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: categories; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: chat_conversations; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.chat_conversations ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: chat_messages; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: credit_cards; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
 ALTER TABLE public.credit_cards ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: financial_insights; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.financial_insights ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: goal_contributions; Type: ROW SECURITY; Schema: public; Owner: -
@@ -577,6 +923,12 @@ ALTER TABLE public.goal_contributions ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.goals ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: imported_transactions; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.imported_transactions ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: profiles; Type: ROW SECURITY; Schema: public; Owner: -
