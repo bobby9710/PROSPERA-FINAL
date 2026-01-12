@@ -28,7 +28,7 @@ import {
   Settings,
   LogOut,
   Sparkles,
-  X,
+  Crown,
 } from "lucide-react";
 
 const navItems = [
@@ -52,7 +52,8 @@ const navItems = [
 
 const bottomNavItems = [
   { icon: Bell, label: "Notificações", href: "/notifications" },
-  { icon: Settings, label: "Configurações", href: "/profile" },
+  { icon: Settings, label: "Configurações", href: "/settings" },
+  { icon: Crown, label: "Premium", href: "/premium", premium: true },
 ];
 
 export function MobileMenu() {
@@ -131,11 +132,17 @@ export function MobileMenu() {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                   isActive
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  item.premium && "bg-gradient-to-r from-yellow-500/10 to-orange-500/10"
                 )}
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon className={cn("w-5 h-5", item.premium && "text-yellow-500")} />
                 <span className="font-medium text-sm">{item.label}</span>
+                {item.premium && (
+                  <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold">
+                    PRO
+                  </span>
+                )}
               </Link>
             );
           })}

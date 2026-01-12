@@ -25,6 +25,8 @@ import Automations from "./pages/Automations";
 import Education from "./pages/Education";
 import FinancialProfile from "./pages/FinancialProfile";
 import Notifications from "./pages/Notifications";
+import Settings from "./pages/Settings";
+import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -187,6 +189,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/premium"
+              element={
+                <ProtectedRoute>
+                  <Premium />
                 </ProtectedRoute>
               }
             />
