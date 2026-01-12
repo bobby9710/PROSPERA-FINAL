@@ -21,6 +21,7 @@ import {
   Zap,
   BookOpen,
   User,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -48,6 +49,7 @@ const navItems = [
 const bottomNavItems = [
   { icon: Bell, label: "Notificações", href: "/notifications" },
   { icon: Settings, label: "Configurações", href: "/settings" },
+  { icon: Crown, label: "Premium", href: "/premium", premium: true },
 ];
 
 export function Sidebar() {
@@ -108,10 +110,19 @@ export function Sidebar() {
             <Link
               key={item.href}
               to={item.href}
-              className={cn("nav-item", isActive && "active")}
+              className={cn(
+                "nav-item",
+                isActive && "active",
+                item.premium && "bg-gradient-to-r from-yellow-500/10 to-orange-500/10"
+              )}
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className={cn("w-5 h-5", item.premium && "text-yellow-500")} />
               <span className="font-medium">{item.label}</span>
+              {item.premium && (
+                <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold">
+                  PRO
+                </span>
+              )}
             </Link>
           );
         })}
