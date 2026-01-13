@@ -1,1 +1,19 @@
 project_id = "gzbmrpfuefmjxrzzxohn"
+
+[functions.financial-assistant]
+verify_jwt = false
+
+[functions.generate-insights]
+verify_jwt = false
+
+[functions.scan-receipt]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
