@@ -57,6 +57,23 @@ export function useIsPremium() {
   return subscription?.plan_type === "premium" && subscription?.status === "active";
 }
 
+export function useCheckSubscription() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("check-subscription", {});
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subscription", user?.id] });
+    },
+  });
+}
+
 export function useCreateCheckout() {
   const { toast } = useToast();
 
@@ -71,7 +88,7 @@ export function useCreateCheckout() {
     },
     onSuccess: (data) => {
       if (data?.url) {
-        window.location.href = data.url;
+        window.open(data.url, "_blank");
       }
     },
     onError: () => {
@@ -96,7 +113,7 @@ export function useManageSubscription() {
     },
     onSuccess: (data) => {
       if (data?.url) {
-        window.location.href = data.url;
+        window.open(data.url, "_blank");
       }
     },
     onError: () => {

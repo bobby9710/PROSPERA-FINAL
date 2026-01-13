@@ -1,8 +1,10 @@
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useSubscription, useIsPremium, useCreateCheckout, useManageSubscription } from "@/hooks/useSubscription";
+import { useSubscription, useIsPremium, useCreateCheckout, useManageSubscription, useCheckSubscription } from "@/hooks/useSubscription";
 import { 
   Crown, 
   Check, 
@@ -20,6 +22,10 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
+
+// Price ID from Stripe
+const PREMIUM_PRICE_ID = "price_1SovylDFeKUEOYJGcXwjARjI";
 
 const plans = [
   {
@@ -46,7 +52,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "R$ 29,90",
+    price: "R$ 19,90",
     period: "/mês",
     description: "Tudo que você precisa para dominar suas finanças",
     features: [
@@ -64,22 +70,7 @@ const plans = [
     ],
     cta: "Assinar Agora",
     popular: true,
-    priceId: "price_premium_monthly",
-  },
-  {
-    name: "Premium Anual",
-    price: "R$ 239,90",
-    period: "/ano",
-    description: "Economize 33% pagando anualmente",
-    features: [
-      { name: "Tudo do Premium", included: true },
-      { name: "2 meses grátis", included: true },
-      { name: "Suporte prioritário", included: true },
-      { name: "Acesso antecipado", included: true },
-    ],
-    cta: "Assinar Anual",
-    popular: false,
-    priceId: "price_premium_yearly",
+    priceId: PREMIUM_PRICE_ID,
   },
 ];
 
@@ -117,10 +108,45 @@ const premiumFeatures = [
 ];
 
 export default function Premium() {
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
   const { data: subscription, isLoading } = useSubscription();
   const isPremium = useIsPremium();
   const createCheckout = useCreateCheckout();
   const manageSubscription = useManageSubscription();
+  const checkSubscription = useCheckSubscription();
+
+  // Check subscription status on mount and after successful payment
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const canceled = searchParams.get("canceled");
+
+    if (success === "true") {
+      toast({
+        title: "Pagamento realizado!",
+        description: "Sua assinatura Premium está sendo ativada...",
+      });
+      // Check subscription status after successful payment
+      checkSubscription.mutate();
+    } else if (canceled === "true") {
+      toast({
+        title: "Pagamento cancelado",
+        description: "O checkout foi cancelado. Você pode tentar novamente.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams]);
+
+  // Check subscription status periodically
+  useEffect(() => {
+    checkSubscription.mutate();
+    
+    const interval = setInterval(() => {
+      checkSubscription.mutate();
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubscribe = (priceId: string | null) => {
     if (priceId) {
