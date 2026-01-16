@@ -108,25 +108,27 @@ export default function Reports() {
               </div>
               
               {/* Date Range and Filters */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="min-w-0">
                   <Label className="text-xs">De</Label>
                   <Input
                     type="date"
                     value={dateRange.start}
                     onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="w-full"
+                    className="w-full text-sm"
                   />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <Label className="text-xs">Até</Label>
                   <Input
                     type="date"
                     value={dateRange.end}
                     onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="w-full"
+                    className="w-full text-sm"
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <Select value={typeFilter || "all"} onValueChange={v => setTypeFilter(v === "all" ? null : v)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Tipo" />
@@ -254,20 +256,25 @@ export default function Reports() {
 
             {/* Charts */}
             <Tabs defaultValue="timeline">
-              <TabsList>
-                <TabsTrigger value="timeline" className="gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Evolução
-                </TabsTrigger>
-                <TabsTrigger value="categories" className="gap-2">
-                  <PieChart className="h-4 w-4" />
-                  Categorias
-                </TabsTrigger>
-                <TabsTrigger value="comparison" className="gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Comparativo
-                </TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <TabsList className="inline-flex w-auto min-w-full sm:w-full">
+                  <TabsTrigger value="timeline" className="gap-1 sm:gap-2 text-xs sm:text-sm flex-1">
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">Evolução</span>
+                    <span className="xs:hidden">📈</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="categories" className="gap-1 sm:gap-2 text-xs sm:text-sm flex-1">
+                    <PieChart className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">Categorias</span>
+                    <span className="xs:hidden">📊</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="comparison" className="gap-1 sm:gap-2 text-xs sm:text-sm flex-1">
+                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">Comparativo</span>
+                    <span className="xs:hidden">📉</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value="timeline" className="mt-4">
                 <Card>
@@ -400,13 +407,13 @@ export default function Reports() {
               </TabsContent>
 
               <TabsContent value="comparison" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Comparativo com Período Anterior</CardTitle>
-                    <CardDescription>Como suas finanças mudaram</CardDescription>
+                <Card className="overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base sm:text-lg">Comparativo com Período Anterior</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">Como suas finanças mudaram</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="h-80">
+                  <CardContent className="p-2 sm:p-6">
+                    <div className="h-64 sm:h-80 -mx-2 sm:mx-0">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={[
@@ -421,14 +428,15 @@ export default function Reports() {
                               anterior: reportData?.comparison.previousPeriod.expenses || 0,
                             },
                           ]}
+                          margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis tickFormatter={(v) => `R$ ${v}`} />
+                          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                          <YAxis tickFormatter={(v) => `R$${v}`} tick={{ fontSize: 10 }} width={50} />
                           <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                          <Legend />
-                          <Bar dataKey="anterior" name="Período Anterior" fill="#94a3b8" />
-                          <Bar dataKey="atual" name="Período Atual" fill="#8b5cf6" />
+                          <Legend wrapperStyle={{ fontSize: 12 }} />
+                          <Bar dataKey="anterior" name="Anterior" fill="#94a3b8" />
+                          <Bar dataKey="atual" name="Atual" fill="#8b5cf6" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
