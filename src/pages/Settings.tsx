@@ -85,36 +85,38 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 w-full">
-            <TabsTrigger value="profile" className="gap-2">
-              <User className="w-4 h-4" />
-              <span className="hidden sm:inline">Perfil</span>
-            </TabsTrigger>
-            <TabsTrigger value="password" className="gap-2">
-              <Lock className="w-4 h-4" />
-              <span className="hidden sm:inline">Senha</span>
-            </TabsTrigger>
-            <TabsTrigger value="categories" className="gap-2">
-              <Tag className="w-4 h-4" />
-              <span className="hidden sm:inline">Categorias</span>
-            </TabsTrigger>
-            <TabsTrigger value="preferences" className="gap-2">
-              <Settings2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Preferências</span>
-            </TabsTrigger>
-            <TabsTrigger value="theme" className="gap-2">
-              <Palette className="w-4 h-4" />
-              <span className="hidden sm:inline">Tema</span>
-            </TabsTrigger>
-            <TabsTrigger value="privacy" className="gap-2">
-              <Shield className="w-4 h-4" />
-              <span className="hidden sm:inline">Privacidade</span>
-            </TabsTrigger>
-            <TabsTrigger value="danger" className="gap-2 text-destructive">
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Conta</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:w-full">
+              <TabsTrigger value="profile" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Perfil</span>
+              </TabsTrigger>
+              <TabsTrigger value="password" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Senha</span>
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Categorias</span>
+              </TabsTrigger>
+              <TabsTrigger value="preferences" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Settings2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Preferências</span>
+              </TabsTrigger>
+              <TabsTrigger value="theme" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Tema</span>
+              </TabsTrigger>
+              <TabsTrigger value="privacy" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Privacidade</span>
+              </TabsTrigger>
+              <TabsTrigger value="danger" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3 text-destructive">
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Conta</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Profile Tab */}
           <TabsContent value="profile">

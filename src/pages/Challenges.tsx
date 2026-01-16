@@ -131,25 +131,27 @@ export default function Challenges() {
 
         {/* Tabs */}
         <Tabs defaultValue="active">
-          <div className="flex justify-between items-center">
-            <TabsList>
-              <TabsTrigger value="active" className="gap-2">
-                <Flame className="h-4 w-4" />
-                Ativos ({activeChallenges.length})
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Completos ({completedChallenges.length})
-              </TabsTrigger>
-              <TabsTrigger value="failed" className="gap-2">
-                <XCircle className="h-4 w-4" />
-                Falhos ({failedChallenges.length})
-              </TabsTrigger>
-            </TabsList>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="w-full overflow-x-auto">
+              <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
+                <TabsTrigger value="active" className="gap-1.5 text-xs sm:text-sm">
+                  <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Ativos</span> ({activeChallenges.length})
+                </TabsTrigger>
+                <TabsTrigger value="completed" className="gap-1.5 text-xs sm:text-sm">
+                  <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Completos</span> ({completedChallenges.length})
+                </TabsTrigger>
+                <TabsTrigger value="failed" className="gap-1.5 text-xs sm:text-sm">
+                  <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Falhos</span> ({failedChallenges.length})
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button size="sm" className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Desafio
                 </Button>

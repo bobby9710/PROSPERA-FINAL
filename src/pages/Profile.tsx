@@ -9,6 +9,7 @@ import {
   Settings,
   HelpCircle
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,25 +20,25 @@ const menuItems = [
     icon: User,
     label: "Dados Pessoais",
     description: "Nome, email, telefone",
-    href: "/profile/personal",
+    href: "/settings",
   },
   {
     icon: Shield,
     label: "Segurança",
     description: "Senha, autenticação",
-    href: "/profile/security",
+    href: "/settings",
   },
   {
     icon: Bell,
     label: "Notificações",
     description: "Preferências de alertas",
-    href: "/profile/notifications",
+    href: "/notifications",
   },
   {
     icon: CreditCard,
     label: "Assinatura",
     description: "Gerenciar plano",
-    href: "/profile/subscription",
+    href: "/premium",
     badge: "Premium",
   },
   {
@@ -50,7 +51,7 @@ const menuItems = [
     icon: HelpCircle,
     label: "Ajuda",
     description: "FAQ e suporte",
-    href: "/help",
+    href: "/settings",
   },
 ];
 
@@ -115,9 +116,10 @@ export default function Profile() {
 
       {/* Menu Items */}
       <div className="bg-card rounded-2xl border border-border/50 shadow-card overflow-hidden animate-slide-up" style={{ animationDelay: '250ms' }}>
-        {menuItems.map((item) => (
-          <button
-            key={item.href}
+        {menuItems.map((item, index) => (
+          <Link
+            key={`${item.href}-${index}`}
+            to={item.href}
             className="flex items-center gap-4 w-full p-4 hover:bg-muted/50 transition-colors border-b border-border/50 last:border-0"
           >
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -135,7 +137,7 @@ export default function Profile() {
               <p className="text-sm text-muted-foreground">{item.description}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
+          </Link>
         ))}
       </div>
 
