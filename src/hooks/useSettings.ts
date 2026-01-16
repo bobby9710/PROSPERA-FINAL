@@ -104,11 +104,21 @@ export function useUpdatePassword() {
 
   return useMutation({
     mutationFn: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
-      // First verify current password by trying to sign in
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) throw new Error("User not found");
 
-      // Update password
+      // Verify current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      
+      if (signInError) {
+        throw new Error("Senha atual incorreta");
+      }
+
+      // Only update password if current password verification succeeded
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -121,10 +131,12 @@ export function useUpdatePassword() {
         description: "Sua senha foi atualizada com sucesso",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Erro",
-        description: "Não foi possível alterar a senha",
+        description: error instanceof Error && error.message === "Senha atual incorreta" 
+          ? "Senha atual incorreta" 
+          : "Não foi possível alterar a senha",
         variant: "destructive",
       });
     },
