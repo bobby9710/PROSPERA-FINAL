@@ -404,8 +404,8 @@ export default function Transactions() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col lg:flex-row gap-4 mb-6 animate-fade-in" style={{ animationDelay: '250ms' }}>
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-4 mb-6 animate-fade-in" style={{ animationDelay: '250ms' }}>
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             placeholder="Buscar transações..."
@@ -418,7 +418,7 @@ export default function Transactions() {
           />
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
           {/* Advanced Filters */}
           <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
             <PopoverTrigger asChild>
@@ -481,7 +481,7 @@ export default function Transactions() {
           </Popover>
 
           {/* Type Filter */}
-          <div className="flex bg-muted rounded-lg p-1">
+          <div className="flex bg-muted rounded-lg p-1 overflow-x-auto">
             {(["all", "income", "expense"] as const).map((type) => (
               <button
                 key={type}
