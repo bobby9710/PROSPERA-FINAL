@@ -176,7 +176,7 @@ export default function Assistant() {
 
   return (
     <AppLayout>
-      <div className="flex h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)] gap-4">
+      <div className="flex h-[calc(100vh-12rem)] sm:h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)] gap-4">
         {/* Sidebar - Conversations */}
         <div className="hidden md:flex flex-col w-64 bg-card rounded-xl border border-border/50 p-4">
           <Button 

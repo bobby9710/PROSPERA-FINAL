@@ -89,27 +89,33 @@ export default function Reports() {
         {/* Filters */}
         <Card>
           <CardContent className="p-4">
-            <div className="flex flex-wrap gap-4 items-end">
-              <div className="flex gap-2">
-                {PRESET_PERIODS.map((preset, i) => (
-                  <Button
-                    key={i}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDateRange(preset.getValue())}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
+            <div className="space-y-4">
+              {/* Period Presets - horizontal scroll on mobile */}
+              <div className="overflow-x-auto -mx-4 px-4">
+                <div className="flex gap-2 min-w-max">
+                  {PRESET_PERIODS.map((preset, i) => (
+                    <Button
+                      key={i}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDateRange(preset.getValue())}
+                      className="whitespace-nowrap"
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-2 items-center">
+              
+              {/* Date Range and Filters */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <Label className="text-xs">De</Label>
                   <Input
                     type="date"
                     value={dateRange.start}
                     onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="w-36"
+                    className="w-full"
                   />
                 </div>
                 <div>
@@ -118,33 +124,33 @@ export default function Reports() {
                     type="date"
                     value={dateRange.end}
                     onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="w-36"
+                    className="w-full"
                   />
                 </div>
+                <Select value={typeFilter || "all"} onValueChange={v => setTypeFilter(v === "all" ? null : v)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="income">Receitas</SelectItem>
+                    <SelectItem value="expense">Despesas</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={categoryFilter || "all"} onValueChange={v => setCategoryFilter(v === "all" ? null : v)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.icon} {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={typeFilter || "all"} onValueChange={v => setTypeFilter(v === "all" ? null : v)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="income">Receitas</SelectItem>
-                  <SelectItem value="expense">Despesas</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={categoryFilter || "all"} onValueChange={v => setCategoryFilter(v === "all" ? null : v)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.icon} {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>

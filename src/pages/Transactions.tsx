@@ -302,20 +302,20 @@ export default function Transactions() {
   return (
     <AppLayout>
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 animate-fade-in">
+      <div className="flex flex-col gap-4 mb-6 animate-fade-in">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Transações</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Transações</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Gerencie suas receitas e despesas
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportToCSV}>
-            <Download className="w-5 h-5 mr-2" />
-            Exportar CSV
+          <Button variant="outline" size="sm" onClick={exportToCSV} className="flex-1 sm:flex-none">
+            <Download className="w-4 h-4 mr-1.5" />
+            <span className="hidden sm:inline">Exportar</span> CSV
           </Button>
-          <Button className="btn-gradient" onClick={handleCreate}>
-            <Plus className="w-5 h-5 mr-2" />
+          <Button className="btn-gradient flex-1 sm:flex-none" size="sm" onClick={handleCreate}>
+            <Plus className="w-4 h-4 mr-1.5" />
             Nova Transação
           </Button>
         </div>
