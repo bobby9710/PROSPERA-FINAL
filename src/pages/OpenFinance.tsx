@@ -195,35 +195,41 @@ export default function OpenFinance() {
                   return (
                     <div
                       key={conn.id}
-                      className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg"
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 bg-muted/50 rounded-lg"
                     >
-                      <span className="text-2xl">{bank?.logo || "🏦"}</span>
-                      <div className="flex-1">
-                        <p className="font-medium">{conn.bank_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Última sync: {conn.last_sync_at 
-                            ? format(new Date(conn.last_sync_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
-                            : "Nunca"
-                          }
-                        </p>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className="text-2xl shrink-0">{bank?.logo || "🏦"}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{conn.bank_name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                            Última sync: {conn.last_sync_at 
+                              ? format(new Date(conn.last_sync_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                              : "Nunca"
+                            }
+                          </p>
+                        </div>
                       </div>
-                      {getStatusBadge(conn.status)}
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => syncBank.mutate(conn.id)}
-                          disabled={syncBank.isPending}
-                        >
-                          <RefreshCw className={cn("w-4 h-4", syncBank.isPending && "animate-spin")} />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDisconnectId(conn.id)}
-                        >
-                          <Link2Off className="w-4 h-4 text-destructive" />
-                        </Button>
+                      <div className="flex items-center gap-2 justify-between sm:justify-end">
+                        {getStatusBadge(conn.status)}
+                        <div className="flex gap-1.5 sm:gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                            onClick={() => syncBank.mutate(conn.id)}
+                            disabled={syncBank.isPending}
+                          >
+                            <RefreshCw className={cn("w-4 h-4", syncBank.isPending && "animate-spin")} />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                            onClick={() => setDisconnectId(conn.id)}
+                          >
+                            <Link2Off className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   );

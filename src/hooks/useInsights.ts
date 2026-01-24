@@ -95,9 +95,9 @@ function getTitleForType(type: string): string {
   switch (type) {
     case "monthly_analysis":
       return "Análise Mensal";
-    case "spending_patterns":
+    case "spending_pattern":
       return "Padrões de Gasto";
-    case "recommendations":
+    case "recommendation":
       return "Recomendações Personalizadas";
     default:
       return "Insight Financeiro";

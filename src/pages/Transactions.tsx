@@ -383,19 +383,19 @@ export default function Transactions() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="stat-card animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <p className="text-sm text-muted-foreground mb-1">Receitas</p>
-          <p className="text-xl font-bold text-success">{formatCurrency(stats.totalIncome)}</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+        <div className="stat-card animate-fade-in p-3 sm:p-4" style={{ animationDelay: '100ms' }}>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Receitas</p>
+          <p className="text-sm sm:text-xl font-bold text-success truncate">{formatCurrency(stats.totalIncome)}</p>
         </div>
-        <div className="stat-card animate-fade-in" style={{ animationDelay: '150ms' }}>
-          <p className="text-sm text-muted-foreground mb-1">Despesas</p>
-          <p className="text-xl font-bold text-destructive">{formatCurrency(stats.totalExpense)}</p>
+        <div className="stat-card animate-fade-in p-3 sm:p-4" style={{ animationDelay: '150ms' }}>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Despesas</p>
+          <p className="text-sm sm:text-xl font-bold text-destructive truncate">{formatCurrency(stats.totalExpense)}</p>
         </div>
-        <div className="stat-card animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <p className="text-sm text-muted-foreground mb-1">Saldo</p>
+        <div className="stat-card animate-fade-in p-3 sm:p-4" style={{ animationDelay: '200ms' }}>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Saldo</p>
           <p className={cn(
-            "text-xl font-bold",
+            "text-sm sm:text-xl font-bold truncate",
             stats.balance >= 0 ? "text-success" : "text-destructive"
           )}>
             {formatCurrency(stats.balance)}
@@ -540,37 +540,41 @@ export default function Transactions() {
               {paginatedTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group"
+                  className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-muted/50 transition-colors"
                 >
                   <div
                     className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
+                      "w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0",
                       transaction.type === "income"
                         ? "bg-success/10"
                         : "bg-destructive/10"
                     )}
                   >
                     {transaction.category?.icon ? (
-                      <span className="text-2xl">{transaction.category.icon}</span>
+                      <span className="text-xl sm:text-2xl">{transaction.category.icon}</span>
                     ) : transaction.type === "income" ? (
-                      <ArrowDownLeft className="w-6 h-6 text-success" />
+                      <ArrowDownLeft className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
                     ) : (
-                      <ArrowUpRight className="w-6 h-6 text-destructive" />
+                      <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">
+                    <p className="font-medium text-foreground truncate text-sm sm:text-base">
                       {transaction.description}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1 sm:gap-2 mt-0.5 flex-wrap">
+                      <span className="text-xs sm:text-sm text-muted-foreground">
+                        {formatDate(transaction.date)}
+                      </span>
+                      <span className="text-muted-foreground/50 hidden sm:inline">•</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
                         {transaction.category?.name || "Sem categoria"}
                       </span>
                       {transaction.payment_method && (
                         <>
-                          <span className="text-muted-foreground/50">•</span>
-                          <span className="text-sm text-muted-foreground capitalize">
+                          <span className="text-muted-foreground/50 hidden sm:inline">•</span>
+                          <span className="text-xs sm:text-sm text-muted-foreground capitalize hidden sm:inline">
                             {transaction.payment_method === "pix" ? "PIX" : 
                              transaction.payment_method === "credit" ? "Crédito" :
                              transaction.payment_method === "debit" ? "Débito" :
@@ -579,21 +583,13 @@ export default function Transactions() {
                           </span>
                         </>
                       )}
-                      {transaction.is_recurring && (
-                        <>
-                          <span className="text-muted-foreground/50">•</span>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                            Recorrente
-                          </span>
-                        </>
-                      )}
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <p
                       className={cn(
-                        "font-semibold",
+                        "font-semibold text-sm sm:text-base",
                         transaction.type === "income"
                           ? "text-success"
                           : "text-destructive"
@@ -602,17 +598,14 @@ export default function Transactions() {
                       {transaction.type === "income" ? "+" : "-"}
                       {formatCurrency(Number(transaction.amount))}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(transaction.date)}
-                    </p>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Actions - visible on mobile */}
+                  <div className="flex gap-1">
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="shrink-0"
+                      className="shrink-0 h-8 w-8 sm:h-9 sm:w-9"
                       onClick={() => handleEdit(transaction)}
                     >
                       <Edit className="w-4 h-4" />
@@ -620,7 +613,7 @@ export default function Transactions() {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="shrink-0"
+                      className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 hidden sm:flex"
                       onClick={() => handleDuplicate(transaction)}
                     >
                       <Copy className="w-4 h-4" />
@@ -628,7 +621,7 @@ export default function Transactions() {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => setDeleteId(transaction.id)}
                     >
                       <Trash2 className="w-4 h-4" />

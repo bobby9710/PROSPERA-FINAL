@@ -197,18 +197,20 @@ export default function Simulator() {
 
         {/* Simulator Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 w-full max-w-lg">
-            <TabsTrigger value="savings" className="gap-2">
-              <PiggyBank className="w-4 h-4" />
-              Poupança
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="savings" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+              <PiggyBank className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Poupança</span>
+              <span className="xs:hidden">Poup.</span>
             </TabsTrigger>
-            <TabsTrigger value="target" className="gap-2">
-              <Target className="w-4 h-4" />
-              Meta
+            <TabsTrigger value="target" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+              <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Meta</span>
             </TabsTrigger>
-            <TabsTrigger value="goal" className="gap-2">
-              <Calendar className="w-4 h-4" />
-              Quando?
+            <TabsTrigger value="goal" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4">
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Quando?</span>
+              <span className="xs:hidden">?</span>
             </TabsTrigger>
           </TabsList>
 

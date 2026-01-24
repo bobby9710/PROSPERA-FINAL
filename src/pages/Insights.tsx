@@ -39,6 +39,16 @@ export default function Insights() {
   const patternsInsight = insights.find(i => i.type === "spending_pattern");
   const recommendationsInsight = insights.find(i => i.type === "recommendation");
 
+  // Map internal type names to database constraint values
+  const getDbType = (uiType: string) => {
+    const typeMap: Record<string, string> = {
+      "spending_patterns": "spending_pattern",
+      "recommendations": "recommendation",
+      "monthly_analysis": "monthly_analysis"
+    };
+    return typeMap[uiType] || uiType;
+  };
+
   const handleGenerateInsight = async (type: string) => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -271,7 +281,7 @@ export default function Insights() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleGenerateInsight("spending_patterns")}
+                  onClick={() => handleGenerateInsight("spending_pattern")}
                   disabled={generateInsights.isPending}
                 >
                   <RefreshCw className={cn("w-4 h-4 mr-2", generateInsights.isPending && "animate-spin")} />
@@ -365,7 +375,7 @@ export default function Insights() {
                     <TrendingUp className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                     <p className="text-muted-foreground mb-4">Nenhum padrão identificado ainda</p>
                     <Button
-                      onClick={() => handleGenerateInsight("spending_patterns")}
+                      onClick={() => handleGenerateInsight("spending_pattern")}
                       disabled={generateInsights.isPending}
                     >
                       Identificar Padrões
@@ -387,7 +397,7 @@ export default function Insights() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleGenerateInsight("recommendations")}
+                  onClick={() => handleGenerateInsight("recommendation")}
                   disabled={generateInsights.isPending}
                 >
                   <RefreshCw className={cn("w-4 h-4 mr-2", generateInsights.isPending && "animate-spin")} />
@@ -472,7 +482,7 @@ export default function Insights() {
                     <Lightbulb className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                     <p className="text-muted-foreground mb-4">Nenhuma recomendação gerada ainda</p>
                     <Button
-                      onClick={() => handleGenerateInsight("recommendations")}
+                      onClick={() => handleGenerateInsight("recommendation")}
                       disabled={generateInsights.isPending}
                     >
                       Gerar Recomendações
