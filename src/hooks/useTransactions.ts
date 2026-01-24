@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
+import { useCallback } from "react";
 
 export interface Transaction {
   id: string;
@@ -192,10 +193,49 @@ export function useCreateTransaction() {
     mutationFn: async (data: CreateTransactionData) => {
       if (!user) throw new Error("User not authenticated");
 
+      // First, check for automation rules
+      const { data: automationRules } = await supabase
+        .from("automation_rules")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_active", true);
+
+      let categoryId = data.category_id;
+      let appliedAutomation: string | null = null;
+
+      // Apply automation rules
+      if (automationRules && automationRules.length > 0) {
+        for (const rule of automationRules) {
+          let shouldApply = false;
+
+          switch (rule.trigger_type) {
+            case "description_contains":
+              if (rule.trigger_value && data.description.toLowerCase().includes(rule.trigger_value.toLowerCase())) {
+                shouldApply = true;
+              }
+              break;
+            case "amount_greater":
+              if (rule.trigger_value && data.amount > parseFloat(rule.trigger_value)) {
+                shouldApply = true;
+              }
+              break;
+            case "new_transaction":
+              shouldApply = true;
+              break;
+          }
+
+          if (shouldApply && rule.action_type === "change_category" && rule.action_value) {
+            categoryId = rule.action_value;
+            appliedAutomation = rule.name;
+            break; // Apply first matching rule
+          }
+        }
+      }
+
       // Sanitize data: convert empty strings to null/undefined for UUID fields
       const sanitizedData = {
         ...data,
-        category_id: data.category_id && data.category_id.trim() !== "" ? data.category_id : null,
+        category_id: categoryId && categoryId.trim() !== "" ? categoryId : null,
         credit_card_id: data.credit_card_id && data.credit_card_id.trim() !== "" ? data.credit_card_id : null,
         payment_method: data.payment_method && data.payment_method.trim() !== "" ? data.payment_method : null,
         notes: data.notes && data.notes.trim() !== "" ? data.notes : null,
@@ -212,14 +252,21 @@ export function useCreateTransaction() {
         .single();
 
       if (error) throw error;
-      return transaction;
+      return { transaction, appliedAutomation };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      toast({
-        title: "Transação criada!",
-        description: "Sua transação foi salva com sucesso.",
-      });
+      if (result.appliedAutomation) {
+        toast({
+          title: "Transação criada!",
+          description: `Automação "${result.appliedAutomation}" aplicada automaticamente.`,
+        });
+      } else {
+        toast({
+          title: "Transação criada!",
+          description: "Sua transação foi salva com sucesso.",
+        });
+      }
     },
     onError: (error) => {
       toast({
