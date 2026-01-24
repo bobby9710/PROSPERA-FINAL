@@ -48,6 +48,37 @@ interface ScanResult {
   error?: string;
 }
 
+// Category keyword mappings for auto-suggestion
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  'Alimentação': ['restaurante', 'lanchonete', 'pizzaria', 'padaria', 'açougue', 'mercado', 'supermercado', 'hortifruti', 'cafeteria', 'bar', 'churrascaria', 'sushi', 'hamburgueria', 'food', 'burger', 'pizza', 'lanches', 'delivery', 'ifood', 'rappi'],
+  'Transporte': ['posto', 'combustivel', 'gasolina', 'etanol', 'uber', '99', 'cabify', 'estacionamento', 'parking', 'pedágio', 'onibus', 'metro', 'trem', 'ipiranga', 'shell', 'petrobras', 'br distribuidora'],
+  'Saúde': ['farmacia', 'drogaria', 'hospital', 'clinica', 'laboratorio', 'consultorio', 'medico', 'dentista', 'otica', 'drogasil', 'pacheco', 'raia', 'panvel', 'ultrafarma'],
+  'Compras': ['magazine', 'loja', 'shopping', 'outlet', 'amazon', 'mercadolivre', 'shopee', 'americanas', 'casas bahia', 'extra', 'carrefour', 'atacadao', 'assai', 'makro', 'construcao', 'material', 'ferragem'],
+  'Lazer': ['cinema', 'teatro', 'show', 'ingresso', 'parque', 'clube', 'academia', 'fitness', 'gym', 'netflix', 'spotify', 'disney', 'hbo', 'prime', 'games', 'steam'],
+  'Moradia': ['energia', 'eletrica', 'agua', 'saneamento', 'gas', 'aluguel', 'condominio', 'iptu', 'enel', 'cemig', 'copel', 'celesc', 'sabesp', 'cedae'],
+  'Educação': ['escola', 'faculdade', 'universidade', 'curso', 'livro', 'livraria', 'papelaria', 'saraiva', 'cultura', 'udemy', 'coursera', 'alura'],
+  'Assinaturas': ['netflix', 'spotify', 'amazon prime', 'disney', 'hbo', 'globoplay', 'deezer', 'youtube', 'apple', 'microsoft', 'google', 'icloud'],
+};
+
+function suggestCategory(establishment: string, categories: Array<{ id: string; name: string; type: string }>): string | null {
+  const lowerEstablishment = establishment.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  for (const [categoryName, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    for (const keyword of keywords) {
+      const normalizedKeyword = keyword.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (lowerEstablishment.includes(normalizedKeyword)) {
+        const matchedCategory = categories.find(
+          c => c.name.toLowerCase() === categoryName.toLowerCase() && c.type === 'expense'
+        );
+        if (matchedCategory) {
+          return matchedCategory.id;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 export default function Scanner() {
   const [image, setImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -107,7 +138,15 @@ export default function Scanner() {
         // Populate form with extracted data
         if (data.data.amount) setAmount(data.data.amount.toString());
         if (data.data.date) setDate(data.data.date);
-        if (data.data.establishment) setDescription(data.data.establishment);
+        if (data.data.establishment) {
+          setDescription(data.data.establishment);
+          
+          // Auto-suggest category based on establishment name
+          const suggestedCategoryId = suggestCategory(data.data.establishment, categories);
+          if (suggestedCategoryId) {
+            setCategoryId(suggestedCategoryId);
+          }
+        }
         if (data.data.paymentMethod) {
           const method = data.data.paymentMethod === "credit_card" ? "credit" : 
                         data.data.paymentMethod === "debit_card" ? "debit" : 
@@ -115,9 +154,10 @@ export default function Scanner() {
           setPaymentMethod(method);
         }
 
+        const suggestedMsg = categoryId ? " Categoria sugerida automaticamente." : "";
         toast({
           title: "Comprovante escaneado!",
-          description: `Confiança: ${Math.round((data.confidence || 0) * 100)}%`,
+          description: `Confiança: ${Math.round((data.confidence || 0) * 100)}%${suggestedMsg}`,
         });
       } else {
         toast({
