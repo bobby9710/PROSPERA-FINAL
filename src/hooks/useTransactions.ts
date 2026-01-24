@@ -192,12 +192,21 @@ export function useCreateTransaction() {
     mutationFn: async (data: CreateTransactionData) => {
       if (!user) throw new Error("User not authenticated");
 
+      // Sanitize data: convert empty strings to null/undefined for UUID fields
+      const sanitizedData = {
+        ...data,
+        category_id: data.category_id && data.category_id.trim() !== "" ? data.category_id : null,
+        credit_card_id: data.credit_card_id && data.credit_card_id.trim() !== "" ? data.credit_card_id : null,
+        payment_method: data.payment_method && data.payment_method.trim() !== "" ? data.payment_method : null,
+        notes: data.notes && data.notes.trim() !== "" ? data.notes : null,
+      };
+
       const { data: transaction, error } = await supabase
         .from("transactions")
         .insert({
           user_id: user.id,
-          ...data,
-          date: data.date || new Date().toISOString().split('T')[0],
+          ...sanitizedData,
+          date: sanitizedData.date || new Date().toISOString().split('T')[0],
         })
         .select()
         .single();
