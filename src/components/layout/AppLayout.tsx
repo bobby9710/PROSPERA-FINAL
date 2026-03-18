@@ -20,22 +20,28 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       {/* Mobile Header */}
       {isMobile && (
-        <header className="fixed top-0 left-0 right-0 h-14 bg-card/95 backdrop-blur-xl border-b border-border z-50 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2">
+        <header className="fixed top-0 left-0 right-0 h-16 bg-card/60 backdrop-blur-xl border-b border-border/40 z-50 flex items-center justify-between px-6 pt-safe">
+          <div className="flex items-center gap-3">
             <MobileMenu />
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary-foreground" />
+            <Link to="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary via-primary/90 to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-bold text-base">Meu Controle</span>
+              <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Meu Controle</span>
             </Link>
           </div>
           <NotificationBell />
         </header>
       )}
       
-      <main className={`${isMobile ? 'pt-14 pb-24' : 'lg:pl-64'} min-h-screen`}>
-        <div className="p-4 lg:p-8 max-w-7xl mx-auto">
+      <main className={`${isMobile ? 'pt-16 pb-24' : 'lg:pl-64 focus-visible:outline-none focus:outline-none transition-all duration-300'} min-h-screen relative`}>
+        {/* Background ambient light effects for premium look */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 opacity-40 dark:opacity-20">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-secondary/15 blur-[100px]" />
+        </div>
+
+        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
           {children}
         </div>
       </main>

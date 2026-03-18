@@ -108,7 +108,7 @@ export default function Auth() {
         } else {
           toast({
             title: "Conta criada!",
-            description: "Bem-vindo ao Meu Controle IA",
+            description: "Bem-vindo ao Prospera",
           });
         }
       }
@@ -140,7 +140,9 @@ export default function Auth() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-primary mb-4">
               <Sparkles className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">Meu Controle IA</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              Pros<span className="text-primary">pera</span>
+            </h1>
             <p className="text-muted-foreground mt-2">
               {isLogin ? "Entre na sua conta" : "Crie sua conta grátis"}
             </p>
@@ -297,11 +299,14 @@ export default function Auth() {
       {/* Right side - Branding (hidden on mobile) */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary to-secondary items-center justify-center p-8">
         <div className="max-w-md text-center text-primary-foreground">
-          <h2 className="text-4xl font-bold mb-4">
-            Organize suas finanças com inteligência
+          <h2 className="text-5xl font-extrabold mb-6 leading-tight">
+            Prospera
           </h2>
-          <p className="text-lg text-primary-foreground/80 mb-8">
-            Controle gastos, acompanhe metas e receba insights personalizados com IA.
+          <h3 className="text-2xl font-bold mb-4">
+            Organize suas contas
+          </h3>
+          <p className="text-lg text-primary-foreground/90 mb-10">
+            A forma mais inteligente de dominar suas finanças, acompanhar metas e prosperar com IA.
           </p>
           <div className="grid grid-cols-2 gap-4 text-left">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">

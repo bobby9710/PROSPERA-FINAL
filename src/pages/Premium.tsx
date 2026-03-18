@@ -176,7 +176,7 @@ export default function Premium() {
           <h1 className="text-3xl md:text-4xl font-bold">
             Desbloqueie todo o potencial do{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-              Meu Controle IA
+              Prospera
             </span>
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">

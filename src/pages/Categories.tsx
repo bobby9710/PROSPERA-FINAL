@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Tag, Pencil, Trash2, Loader2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/hooks/useCategories";
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, useSeedCategories } from "@/hooks/useCategories";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,37 @@ import {
 } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-const categoryIcons = ["🍔", "🚗", "🏠", "🏥", "🎮", "🛍️", "📱", "📚", "💰", "💼", "📈", "🎁", "📦", "✈️", "🎬", "🏋️", "🐕", "💊"];
+const EXPENSE_SVG_ICONS = [
+  { file: "food.svg", name: "Alimentação" },
+  { file: "bars_and_restaurants.svg", name: "Restaurantes" },
+  { file: "transportation.svg", name: "Transporte" },
+  { file: "home.svg", name: "Moradia" },
+  { file: "health.svg", name: "Saúde" },
+  { file: "entertainment.svg", name: "Lazer" },
+  { file: "shopping.svg", name: "Compras" },
+  { file: "clothing.svg", name: "Vestuário" },
+  { file: "education.svg", name: "Educação" },
+  { file: "pets.svg", name: "Pets" },
+  { file: "work.svg", name: "Trabalho" },
+  { file: "groceries.svg", name: "Mercado" },
+  { file: "travel.svg", name: "Viagem" },
+  { file: "investments.svg", name: "Investimentos" },
+  { file: "personal_care.svg", name: "Cuidados" },
+  { file: "subscriptions_and_services.svg", name: "Assinaturas" },
+  { file: "family_and_children.svg", name: "Família" },
+  { file: "taxes.svg", name: "Impostos" },
+  { file: "debts_and_loans.svg", name: "Dívidas" },
+  { file: "gifts_and_donations.svg", name: "Presentes" },
+  { file: "other.svg", name: "Outros" }
+];
+
+const INCOME_SVG_ICONS = [
+  { file: "salary.svg", name: "Salário" },
+  { file: "earning_investments.svg", name: "Investimentos" },
+  { file: "loans.svg", name: "Empréstimos" },
+  { file: "other_earnings.svg", name: "Outros" }
+];
+
 const categoryColors = [
   "#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", 
   "#EC4899", "#6366F1", "#14B8A6", "#F97316", "#84CC16"
@@ -60,14 +90,25 @@ export default function Categories() {
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
+  const seedCategories = useSeedCategories();
 
-  const currentCategories = activeTab === "expense" ? expenseCategories : incomeCategories;
   const isLoading = expenseLoading || incomeLoading;
+
+  // Auto-seed if premium catalog is incomplete (trigger if less than 21 premium categories)
+  useEffect(() => {
+    if (isLoading) return;
+    
+    const premiumCount = [...(expenseCategories || []), ...(incomeCategories || [])].filter(c => c.icon?.endsWith('.svg')).length;
+    
+    if (premiumCount < 21 && !seedCategories.isPending) {
+      seedCategories.mutate();
+    }
+  }, [isLoading, expenseCategories, incomeCategories]);
 
   const handleOpenCreate = () => {
     setEditingCategory(null);
     setName("");
-    setIcon("📦");
+    setIcon(activeTab === "expense" ? "other.svg" : "other_earnings.svg");
     setColor(categoryColors[0]);
     setShowDialog(true);
   };
@@ -151,6 +192,7 @@ export default function Categories() {
             isLoading={expenseLoading}
             onEdit={handleOpenEdit}
             onDelete={setDeleteId}
+            type="expense"
           />
         </TabsContent>
 
@@ -160,6 +202,7 @@ export default function Categories() {
             isLoading={incomeLoading}
             onEdit={handleOpenEdit}
             onDelete={setDeleteId}
+            type="income"
           />
         </TabsContent>
       </Tabs>
@@ -188,18 +231,27 @@ export default function Categories() {
 
             <div className="space-y-2">
               <Label>Ícone</Label>
-              <div className="flex flex-wrap gap-2">
-                {categoryIcons.map((i) => (
+              <div className="grid grid-cols-5 sm:grid-cols-7 gap-2 max-h-48 overflow-y-auto p-1">
+                {(activeTab === "expense" ? EXPENSE_SVG_ICONS : INCOME_SVG_ICONS).map((i) => (
                   <button
-                    key={i}
+                    key={i.file}
                     type="button"
-                    onClick={() => setIcon(i)}
+                    onClick={() => {
+                      setIcon(i.file);
+                      if (!name) setName(i.name);
+                    }}
                     className={cn(
-                      "w-10 h-10 rounded-lg text-xl flex items-center justify-center border-2 transition-colors",
-                      icon === i ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                      "w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all p-2",
+                      icon === i.file ? "border-primary bg-primary/10 scale-110 shadow-sm" : "border-border/50 hover:border-primary/30 hover:bg-muted/50"
                     )}
+                    title={i.name}
                   >
-                    {i}
+                    <img 
+                      src={`/icons/categorias/${activeTab === "expense" ? "despesas" : "receitas"}/${i.file}`} 
+                      alt={i.name}
+                      className="w-full h-full object-contain"
+                      style={{ filter: icon === i.file ? `drop-shadow(0 0 1px ${color})` : 'none' }}
+                    />
                   </button>
                 ))}
               </div>
@@ -268,9 +320,10 @@ interface CategoriesGridProps {
   isLoading: boolean;
   onEdit: (category: any) => void;
   onDelete: (id: string) => void;
+  type: "expense" | "income";
 }
 
-function CategoriesGrid({ categories, isLoading, onEdit, onDelete }: CategoriesGridProps) {
+function CategoriesGrid({ categories, isLoading, onEdit, onDelete, type }: CategoriesGridProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -279,63 +332,71 @@ function CategoriesGrid({ categories, isLoading, onEdit, onDelete }: CategoriesG
     );
   }
 
-  if (categories.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-card rounded-2xl border border-border/50">
-        <Tag className="w-12 h-12 mb-4 text-muted-foreground/50" />
-        <p className="text-lg font-medium">Nenhuma categoria</p>
-        <p className="text-sm">Crie sua primeira categoria clicando no botão acima</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      {categories.map((category, index) => (
-        <div
-          key={category.id}
-          className="bg-card rounded-2xl border border-border/50 shadow-card p-4 hover:shadow-lg transition-all duration-300 animate-slide-up opacity-0"
-          style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                style={{ backgroundColor: `${category.color}20` }}
-              >
-                {category.icon}
-              </div>
-              <div>
-                <h3 className="font-semibold">{category.name}</h3>
-                {category.is_default && (
-                  <span className="text-xs text-muted-foreground">Padrão</span>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => onEdit(category)}
-              >
-                <Pencil className="w-4 h-4" />
-              </Button>
-              {!category.is_default && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => onDelete(category.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          </div>
+    <div className="space-y-6">
+      {categories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground bg-card/50 backdrop-blur-sm rounded-3xl border border-border/50 shadow-inner">
+          <Loader2 className="w-10 h-10 animate-spin text-primary/30 mb-4" />
+          <p className="text-xl font-bold text-foreground mb-2">Preparando suas categorias...</p>
+          <p className="text-sm text-muted-foreground">Isso levará apenas um instante.</p>
         </div>
-      ))}
+      ) : (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.map((category, index) => (
+            <div
+              key={category.id}
+              className="bg-card rounded-2xl border border-border/50 shadow-card p-4 hover:shadow-lg transition-all duration-300 animate-slide-up opacity-0"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center p-2.5 shadow-sm"
+                    style={{ backgroundColor: category.color }}
+                  >
+                    {category.icon?.endsWith('.svg') ? (
+                      <img 
+                        src={`/icons/categorias/${type === 'income' ? 'receitas' : 'despesas'}/${category.icon}`} 
+                        alt={category.name}
+                        className="w-full h-full object-contain brightness-0 invert"
+                      />
+                    ) : (
+                      <span className="text-2xl text-white">{category.icon || "📦"}</span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{category.name}</h3>
+                    {category.is_default && (
+                      <span className="text-xs text-primary font-medium">Padrão</span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => onEdit(category)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  {!category.is_default && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => onDelete(category.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

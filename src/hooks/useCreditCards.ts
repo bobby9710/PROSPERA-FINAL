@@ -3,6 +3,36 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
 
+export const BANK_ICONS: Record<string, string> = {
+  "nubank": "nubank.png",
+  "itau": "itau.png",
+  "bradesco": "bradesco.png",
+  "bb": "bb.png",
+  "santander": "santander.png",
+  "inter": "intermedium.png",
+  "c6": "c6bank.png",
+  "neon": "neon.png",
+  "pan": "pan.png",
+  "pagbank": "pagbank.png",
+  "next": "next.png",
+  "picpay": "picpay.png",
+  "mercadopago": "mercadopago.png",
+  "sicoob": "sicoob.png",
+  "sicredi": "sicredi.png",
+  "agibank": "agibank.png",
+  "banrisul": "banrisul.png",
+  "visa": "visa.png",
+  "mastercard": "mastercard.png",
+  "elo": "elo.png",
+  "hipercard": "hipercard.png",
+  "amazon": "amazon.png",
+  "carrefour": "carrefour.png",
+  "99pay": "99Pay.png",
+  "paypal": "paypal.png",
+  "senff": "senff.png",
+  "superdigital": "superdigital.png"
+};
+
 export interface CreditCard {
   id: string;
   user_id: string;

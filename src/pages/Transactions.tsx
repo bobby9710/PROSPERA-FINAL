@@ -28,6 +28,7 @@ import {
   CreateTransactionData
 } from "@/hooks/useTransactions";
 import { useCategories } from "@/hooks/useCategories";
+import { parseISOToLocal, formatFullDate } from "@/lib/date-utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -99,18 +100,13 @@ export default function Transactions() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    return formatFullDate(dateString);
   };
 
   // Filter and sort transactions
   const filteredTransactions = useMemo(() => {
     let result = (transactions || []).filter((t) => {
-      const transactionDate = new Date(t.date);
+      const transactionDate = parseISOToLocal(t.date);
       const matchesPeriod = 
         transactionDate.getMonth() === selectedMonth && 
         transactionDate.getFullYear() === selectedYear;
@@ -283,7 +279,7 @@ export default function Transactions() {
   const availableYears = useMemo(() => {
     const years = new Set<number>();
     (transactions || []).forEach(t => {
-      years.add(new Date(t.date).getFullYear());
+      years.add(parseISOToLocal(t.date).getFullYear());
     });
     years.add(now.getFullYear());
     return Array.from(years).sort((a, b) => b - a);
@@ -322,64 +318,68 @@ export default function Transactions() {
       </div>
 
       {/* Period Selector */}
-      <div className="flex items-center justify-center gap-2 mb-6 animate-fade-in" style={{ animationDelay: '50ms' }}>
-        <Button variant="ghost" size="icon" onClick={goToPreviousMonth}>
-          <ChevronLeft className="w-5 h-5" />
-        </Button>
-        
-        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="min-w-[200px]">
-              <Calendar className="w-4 h-4 mr-2" />
-              {MONTHS[selectedMonth]} {selectedYear}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-4" align="center">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">Ano</label>
-                <div className="flex flex-wrap gap-2">
-                  {availableYears.map(year => (
-                    <Button
-                      key={year}
-                      variant={selectedYear === year ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedYear(year)}
-                    >
-                      {year}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">Mês</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {MONTHS.map((month, index) => (
-                    <Button
-                      key={month}
-                      variant={selectedMonth === index ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setSelectedMonth(index);
-                        setIsCalendarOpen(false);
-                        setCurrentPage(1);
-                      }}
-                    >
-                      {month.slice(0, 3)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <Button variant="secondary" className="w-full" onClick={goToCurrentMonth}>
-                Mês Atual
+      <div className="flex items-center justify-center gap-2 mb-8 animate-fade-in" style={{ animationDelay: '50ms' }}>
+        <div className="flex items-center gap-2 bg-card/40 backdrop-blur-sm p-1.5 rounded-2xl border border-border/50 shadow-sm">
+          <Button variant="ghost" size="icon" onClick={goToPreviousMonth} className="h-9 w-9 rounded-xl">
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className="h-9 font-bold px-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors">
+                <Calendar className="w-4 h-4 mr-2" />
+                {MONTHS[selectedMonth]} {selectedYear}
               </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-        
-        <Button variant="ghost" size="icon" onClick={goToNextMonth}>
-          <ChevronRight className="w-5 h-5" />
-        </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-4 bg-card/95 backdrop-blur-xl border-border/50 shadow-2xl rounded-2xl" align="center">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Ano</label>
+                  <div className="flex flex-wrap gap-2">
+                    {availableYears.map(year => (
+                      <Button
+                        key={year}
+                        variant={selectedYear === year ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedYear(year)}
+                        className="rounded-lg"
+                      >
+                        {year}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Mês</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {MONTHS.map((month, index) => (
+                      <Button
+                        key={month}
+                        variant={selectedMonth === index ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setSelectedMonth(index);
+                          setIsCalendarOpen(false);
+                          setCurrentPage(1);
+                        }}
+                        className="rounded-lg"
+                      >
+                        {month.slice(0, 3)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <Button variant="secondary" className="w-full rounded-xl" onClick={goToCurrentMonth}>
+                  Mês Atual
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-9 w-9 rounded-xl">
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -544,18 +544,29 @@ export default function Transactions() {
                 >
                   <div
                     className={cn(
-                      "w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0",
-                      transaction.type === "income"
-                        ? "bg-success/10"
-                        : "bg-destructive/10"
+                      "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center p-2.5 shrink-0 shadow-sm transition-transform group-hover:scale-105",
+                      !transaction.category?.icon && (
+                        transaction.type === "income"
+                          ? "bg-success text-white"
+                          : "bg-destructive text-white"
+                      )
                     )}
+                    style={transaction.category?.icon ? { backgroundColor: transaction.category.color } : {}}
                   >
-                    {transaction.category?.icon ? (
-                      <span className="text-xl sm:text-2xl">{transaction.category.icon}</span>
+                    {transaction.category?.icon?.endsWith('.svg') ? (
+                      <img 
+                        src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${transaction.category.icon}`} 
+                        alt={transaction.category.name}
+                        className="w-full h-full object-contain brightness-0 invert"
+                      />
+                    ) : transaction.category?.icon ? (
+                      <span className="text-xl sm:text-2xl text-white font-bold">
+                        {transaction.category.icon}
+                      </span>
                     ) : transaction.type === "income" ? (
-                      <ArrowDownLeft className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
+                      <ArrowDownLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     ) : (
-                      <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" />
+                      <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     )}
                   </div>
 

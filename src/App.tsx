@@ -29,12 +29,15 @@ import Settings from "./pages/Settings";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 
+import { ThemeProvider } from "@/hooks/useTheme";
+
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -213,6 +216,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

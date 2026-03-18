@@ -1,8 +1,9 @@
+/* Google Fonts - must come before Tailwind */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -125,21 +126,32 @@
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Safe area for mobile (Android / iOS notch) */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: 0;
   }
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  /* Prevent FOUC - theme applied before paint */
+  html.dark body {
+    color-scheme: dark;
   }
 }
 
 @layer components {
   .card-glass {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-card;
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+    box-shadow: var(--shadow-card);
   }
 
   .card-primary {
     background: var(--gradient-primary);
-    @apply text-primary-foreground shadow-primary;
+    @apply text-primary-foreground;
+    box-shadow: var(--shadow-primary);
   }
 
   .card-success {
@@ -149,7 +161,8 @@
 
   .btn-gradient {
     background: var(--gradient-primary);
-    @apply text-primary-foreground shadow-primary transition-all duration-300;
+    @apply text-primary-foreground transition-all duration-300;
+    box-shadow: var(--shadow-primary);
   }
 
   .btn-gradient:hover {
@@ -157,7 +170,8 @@
   }
 
   .stat-card {
-    @apply p-6 rounded-2xl bg-card border border-border/50 shadow-card transition-all duration-300;
+    @apply p-6 rounded-2xl bg-card border border-border/50 transition-all duration-300;
+    box-shadow: var(--shadow-card);
   }
 
   .stat-card:hover {
@@ -173,7 +187,8 @@
   }
 
   .nav-item.active {
-    @apply bg-primary text-primary-foreground shadow-primary;
+    @apply bg-primary text-primary-foreground;
+    box-shadow: var(--shadow-primary);
   }
 
   .bottom-nav-item {
@@ -190,7 +205,8 @@
 
   .fab-button {
     background: var(--gradient-primary);
-    @apply w-14 h-14 rounded-full flex items-center justify-center text-primary-foreground shadow-primary -mt-6 transition-transform duration-200;
+    @apply w-14 h-14 rounded-full flex items-center justify-center text-primary-foreground -mt-6 transition-transform duration-200;
+    box-shadow: var(--shadow-primary);
   }
 
   .fab-button:hover {
@@ -247,6 +263,14 @@
   .stagger-2 { animation-delay: 0.2s; }
   .stagger-3 { animation-delay: 0.3s; }
   .stagger-4 { animation-delay: 0.4s; }
+
+  /* Safe area helpers for mobile */
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
 }
 
 @keyframes fadeIn {

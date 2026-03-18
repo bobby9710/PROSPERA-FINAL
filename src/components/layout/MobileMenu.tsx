@@ -85,8 +85,12 @@ export function MobileMenu() {
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <div className="text-left">
-              <h1 className="font-bold text-lg">Meu Controle</h1>
-              <span className="text-xs text-primary font-medium">IA</span>
+            <div className="flex flex-col">
+              <h1 className="font-bold text-xl leading-none tracking-tight">
+                Pros<span className="text-primary">pera</span>
+              </h1>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Organize suas contas</span>
+            </div>
             </div>
           </SheetTitle>
         </SheetHeader>

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useSettings, useUpdateSettings, useUpdatePassword, useDeleteAccount, useProfile, useUpdateProfile } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme, Theme } from "@/hooks/useTheme";
 import { User, Lock, Tag, Settings2, Palette, Globe, Shield, Trash2, Save, Eye, EyeOff, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -22,6 +23,7 @@ export default function Settings() {
   const updatePassword = useUpdatePassword();
   const deleteAccount = useDeleteAccount();
   const updateProfile = useUpdateProfile();
+  const { theme, setTheme } = useTheme();
 
   const [fullName, setFullName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -354,21 +356,24 @@ export default function Settings() {
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
                   {[
-                    { value: "light", label: "Claro", icon: "☀️" },
-                    { value: "dark", label: "Escuro", icon: "🌙" },
-                    { value: "system", label: "Sistema", icon: "💻" },
-                  ].map((theme) => (
+                    { value: "light" as Theme, label: "Claro", icon: "☀️" },
+                    { value: "dark" as Theme, label: "Escuro", icon: "🌙" },
+                    { value: "system" as Theme, label: "Sistema", icon: "💻" },
+                  ].map((t) => (
                     <button
-                      key={theme.value}
-                      onClick={() => updateSettings.mutate({ theme: theme.value })}
+                      key={t.value}
+                      onClick={() => {
+                        setTheme(t.value);
+                        updateSettings.mutate({ theme: t.value });
+                      }}
                       className={`p-4 rounded-lg border-2 transition-all ${
-                        settings?.theme === theme.value
+                        theme === t.value
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <div className="text-3xl mb-2">{theme.icon}</div>
-                      <div className="font-medium">{theme.label}</div>
+                      <div className="text-3xl mb-2">{t.icon}</div>
+                      <div className="font-medium">{t.label}</div>
                     </button>
                   ))}
                 </div>

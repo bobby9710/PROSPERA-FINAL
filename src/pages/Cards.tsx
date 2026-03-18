@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useCreditCards, useCreditCardStats, useCreateCreditCard, useDeleteCreditCard, CreditCard as CreditCardType } from "@/hooks/useCreditCards";
+import { useCreditCards, useCreditCardStats, useCreateCreditCard, useDeleteCreditCard, CreditCard as CreditCardType, BANK_ICONS } from "@/hooks/useCreditCards";
 import { useCardTransactions } from "@/hooks/useTransactions";
 import {
   Dialog,
@@ -69,21 +69,18 @@ export default function Cards() {
     }).format(value);
   };
 
-  const getBrandIcon = (brand: string) => {
-    switch (brand) {
-      case "visa":
-        return "VISA";
-      case "mastercard":
-        return "MC";
-      case "elo":
-        return "ELO";
-      case "amex":
-        return "AMEX";
-      case "hipercard":
-        return "HIPER";
-      default:
-        return brand.toUpperCase();
+  const getBrandIcon = (card: CreditCardType) => {
+    const iconFile = BANK_ICONS[card.brand.toLowerCase()];
+    if (iconFile) {
+      return (
+        <img 
+          src={`/icons/bancos/${iconFile}`} 
+          alt={card.brand} 
+          className="h-8 object-contain brightness-0 invert" 
+        />
+      );
     }
+    return <span className="text-lg font-bold tracking-wider">{card.brand.toUpperCase()}</span>;
   };
 
   // Generate mock history for demonstration
@@ -249,10 +246,10 @@ export default function Cards() {
                   
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-8">
-                      <CreditCard className="w-8 h-8" />
-                      <span className="text-lg font-bold tracking-wider">
-                        {getBrandIcon(card.brand)}
-                      </span>
+                      <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                        <CreditCard className="w-6 h-6" />
+                      </div>
+                      {getBrandIcon(card)}
                     </div>
                     
                     <div className="mb-6">
@@ -395,11 +392,13 @@ export default function Cards() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="visa">Visa</SelectItem>
-                    <SelectItem value="mastercard">Mastercard</SelectItem>
-                    <SelectItem value="elo">Elo</SelectItem>
-                    <SelectItem value="amex">Amex</SelectItem>
-                    <SelectItem value="hipercard">Hipercard</SelectItem>
+                    <div className="grid grid-cols-2 gap-1 p-1">
+                      {Object.keys(BANK_ICONS).sort().map((b) => (
+                        <SelectItem key={b} value={b} className="capitalize">
+                          {b}
+                        </SelectItem>
+                      ))}
+                    </div>
                   </SelectContent>
                 </Select>
               </div>

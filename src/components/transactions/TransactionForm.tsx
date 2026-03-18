@@ -21,9 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
-import { useCreditCards } from "@/hooks/useCreditCards";
+import { useCreditCards, BANK_ICONS } from "@/hooks/useCreditCards";
 import { Transaction, CreateTransactionData } from "@/hooks/useTransactions";
 import { toast } from "sonner";
+import { getLocalDateString } from "@/lib/date-utils";
 
 interface TransactionFormProps {
   open: boolean;
@@ -55,7 +56,7 @@ export function TransactionForm({
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(getLocalDateString());
   const [paymentMethod, setPaymentMethod] = useState("");
   const [notes, setNotes] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
@@ -71,7 +72,7 @@ export function TransactionForm({
       setAmount(String(initialData.amount));
       setDescription(mode === "duplicate" ? `${initialData.description} (cópia)` : initialData.description);
       setCategoryId(initialData.category_id || "");
-      setDate(mode === "duplicate" ? new Date().toISOString().split("T")[0] : initialData.date);
+      setDate(mode === "duplicate" ? getLocalDateString() : initialData.date);
       setPaymentMethod(initialData.payment_method || "");
       setNotes(initialData.notes || "");
       setIsRecurring(initialData.is_recurring);
@@ -86,7 +87,7 @@ export function TransactionForm({
     setAmount("");
     setDescription("");
     setCategoryId("");
-    setDate(new Date().toISOString().split("T")[0]);
+    setDate(getLocalDateString());
     setPaymentMethod("");
     setNotes("");
     setIsRecurring(false);
@@ -125,13 +126,13 @@ export function TransactionForm({
       if (paymentMethod === "credit" && numInstallments > 1) {
         const installmentAmount = parseFloat(amount) / numInstallments;
         for (let i = 0; i < numInstallments; i++) {
-          const installmentDate = new Date(date);
+          const installmentDate = new Date(date + 'T12:00:00'); // Garante meio-dia local
           installmentDate.setMonth(installmentDate.getMonth() + i);
           await onSubmit({
             ...data,
             amount: installmentAmount,
             description: `${description.trim()} (${i + 1}/${numInstallments})`,
-            date: installmentDate.toISOString().split("T")[0],
+            date: getLocalDateString(installmentDate),
           });
         }
       } else {
@@ -239,23 +240,69 @@ export function TransactionForm({
                 <Loader2 className="w-5 h-5 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-                {categories?.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setCategoryId(cat.id)}
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all text-center",
-                      categoryId === cat.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    )}
-                  >
-                    <span className="text-xl">{cat.icon}</span>
-                    <span className="text-xs font-medium truncate w-full">{cat.name}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+                {categories && categories.length > 0 ? (
+                  categories.map((cat) => {
+                    const isSvg = cat.icon && cat.icon.endsWith('.svg');
+                    const iconPath = isSvg 
+                      ? `/icons/categorias/${cat.type === 'income' ? 'receitas' : 'despesas'}/${cat.icon}`
+                      : null;
+
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          console.log("Selected category ID:", cat.id);
+                          setCategoryId(cat.id);
+                        }}
+                        className={cn(
+                          "flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all text-center group relative overflow-hidden",
+                          categoryId === cat.id
+                            ? "border-primary bg-primary/10 shadow-md scale-[0.98]"
+                            : "border-border/50 hover:border-primary/30 hover:bg-muted/50"
+                        )}
+                      >
+                        <div 
+                          className={cn(
+                            "w-12 h-12 rounded-full flex items-center justify-center transition-all group-hover:scale-110 shadow-sm p-2.5",
+                            categoryId === cat.id ? "scale-110 shadow-lg" : "opacity-80"
+                          )}
+                          style={{ backgroundColor: cat.color }}
+                        >
+                          {isSvg ? (
+                            <img 
+                              src={iconPath!} 
+                              alt={cat.name} 
+                              className="w-full h-full object-contain brightness-0 invert"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/placeholder.svg";
+                              }}
+                            />
+                          ) : (
+                            <span className="text-2xl text-white font-bold">
+                              {cat.icon || "📦"}
+                            </span>
+                          )}
+                        </div>
+                        <span className={cn(
+                          "text-[10px] font-bold uppercase tracking-tight truncate w-full",
+                          categoryId === cat.id ? "text-primary" : "text-muted-foreground"
+                        )}>
+                          {cat.name}
+                        </span>
+                        
+                        {categoryId === cat.id && (
+                          <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-4 py-8 text-center text-sm text-muted-foreground">
+                    Nenhuma categoria encontrada para este tipo.
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -301,11 +348,30 @@ export function TransactionForm({
                     <SelectValue placeholder="Selecione o cartão..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {creditCards?.map((card) => (
-                      <SelectItem key={card.id} value={card.id}>
-                        {card.name} •••• {card.last_digits}
-                      </SelectItem>
-                    ))}
+                    {creditCards?.map((card) => {
+                      const iconFile = BANK_ICONS[card.brand.toLowerCase()];
+                      return (
+                        <SelectItem key={card.id} value={card.id}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                              {iconFile ? (
+                                <img 
+                                  src={`/icons/bancos/${iconFile}`} 
+                                  alt={card.brand} 
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <CreditCard className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">{card.name}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase">•••• {card.last_digits}</span>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

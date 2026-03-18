@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useCategories } from "@/hooks/useCategories";
 import { useCreateTransaction } from "@/hooks/useTransactions";
 import { toast } from "sonner";
+import { getLocalDateString } from "@/lib/date-utils";
 
 export default function AddTransaction() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function AddTransaction() {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(getLocalDateString());
 
   const { data: categories, isLoading: categoriesLoading } = useCategories(type);
   const createTransaction = useCreateTransaction();

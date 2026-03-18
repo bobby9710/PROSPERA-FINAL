@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
 import { useCallback } from "react";
+import { getLocalDateString } from "@/lib/date-utils";
 
 export interface Transaction {
   id: string;
@@ -63,21 +64,29 @@ export function useTransactions() {
   });
 }
 
-export function useRecentTransactions(limit: number = 5) {
+export function useRecentTransactions(limit: number = 5, month?: number, year?: number) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["transactions", "recent", user?.id, limit],
+    queryKey: ["transactions", "recent", user?.id, limit, month, year],
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from("transactions")
         .select(`
           *,
           category:categories(id, name, icon, color)
         `)
-        .eq("user_id", user.id)
+        .eq("user_id", user.id);
+
+      if (month !== undefined && year !== undefined) {
+        const startOfMonth = getLocalDateString(new Date(year, month, 1));
+        const endOfMonth = getLocalDateString(new Date(year, month + 1, 0));
+        query = query.gte("date", startOfMonth).lte("date", endOfMonth);
+      }
+
+      const { data, error } = await query
         .order("date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(limit);
@@ -89,17 +98,20 @@ export function useRecentTransactions(limit: number = 5) {
   });
 }
 
-export function useTransactionStats() {
+export function useTransactionStats(month?: number, year?: number) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["transactions", "stats", user?.id],
+    queryKey: ["transactions", "stats", user?.id, month, year],
     queryFn: async () => {
       if (!user) return { totalIncome: 0, totalExpense: 0, balance: 0 };
       
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+      const targetMonth = month ?? now.getMonth();
+      const targetYear = year ?? now.getFullYear();
+
+      const startOfMonth = getLocalDateString(new Date(targetYear, targetMonth, 1));
+      const endOfMonth = getLocalDateString(new Date(targetYear, targetMonth + 1, 0));
 
       const { data, error } = await supabase
         .from("transactions")
@@ -143,7 +155,7 @@ export function useMonthlyChartData(months: number = 6) {
         .from("transactions")
         .select("amount, type, date")
         .eq("user_id", user.id)
-        .gte("date", startDate.toISOString().split('T')[0])
+        .gte("date", getLocalDateString(startDate))
         .order("date");
 
       if (error) throw error;
@@ -246,7 +258,7 @@ export function useCreateTransaction() {
         .insert({
           user_id: user.id,
           ...sanitizedData,
-          date: sanitizedData.date || new Date().toISOString().split('T')[0],
+          date: sanitizedData.date || getLocalDateString(),
         })
         .select()
         .single();
@@ -353,8 +365,8 @@ export function useCardTransactions(cardId: string | null, month?: number, year?
       const targetMonth = month ?? now.getMonth();
       const targetYear = year ?? now.getFullYear();
       
-      const startOfMonth = new Date(targetYear, targetMonth, 1).toISOString().split('T')[0];
-      const endOfMonth = new Date(targetYear, targetMonth + 1, 0).toISOString().split('T')[0];
+      const startOfMonth = getLocalDateString(new Date(targetYear, targetMonth, 1));
+      const endOfMonth = getLocalDateString(new Date(targetYear, targetMonth + 1, 0));
 
       const { data, error } = await supabase
         .from("transactions")

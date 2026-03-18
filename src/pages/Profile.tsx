@@ -153,7 +153,7 @@ export default function Profile() {
 
       {/* Version */}
       <p className="text-center text-sm text-muted-foreground mt-6">
-        Meu Controle IA v1.0.0
+        Prospera v2.0.0
       </p>
     </AppLayout>
   );

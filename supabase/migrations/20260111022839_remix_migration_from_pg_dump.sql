@@ -43,23 +43,22 @@ CREATE FUNCTION public.create_default_categories() RETURNS trigger
 BEGIN
   -- Income categories
   INSERT INTO public.categories (user_id, name, icon, color, type, is_default) VALUES
-    (NEW.id, 'Salário', '💰', '#10B981', 'income', true),
-    (NEW.id, 'Freelance', '💼', '#8B5CF6', 'income', true),
-    (NEW.id, 'Investimentos', '📈', '#3B82F6', 'income', true),
-    (NEW.id, 'Presente', '🎁', '#EC4899', 'income', true),
-    (NEW.id, 'Outros', '📦', '#6B7280', 'income', true);
+    (NEW.id, 'Salário', 'salary.svg', '#10B981', 'income', true),
+    (NEW.id, 'Investimentos', 'earning_investments.svg', '#3B82F6', 'income', true),
+    (NEW.id, 'Empréstimos', 'loans.svg', '#8B5CF6', 'income', true),
+    (NEW.id, 'Outros', 'other_earnings.svg', '#6B7280', 'income', true);
   
   -- Expense categories
   INSERT INTO public.categories (user_id, name, icon, color, type, is_default) VALUES
-    (NEW.id, 'Alimentação', '🍔', '#EF4444', 'expense', true),
-    (NEW.id, 'Transporte', '🚗', '#F59E0B', 'expense', true),
-    (NEW.id, 'Moradia', '🏠', '#8B5CF6', 'expense', true),
-    (NEW.id, 'Saúde', '🏥', '#10B981', 'expense', true),
-    (NEW.id, 'Lazer', '🎮', '#EC4899', 'expense', true),
-    (NEW.id, 'Compras', '🛍️', '#3B82F6', 'expense', true),
-    (NEW.id, 'Assinaturas', '📱', '#6366F1', 'expense', true),
-    (NEW.id, 'Educação', '📚', '#14B8A6', 'expense', true),
-    (NEW.id, 'Outros', '📦', '#6B7280', 'expense', true);
+    (NEW.id, 'Alimentação', 'food.svg', '#EF4444', 'expense', true),
+    (NEW.id, 'Transporte', 'transportation.svg', '#3B82F6', 'expense', true),
+    (NEW.id, 'Moradia', 'home.svg', '#8B5CF6', 'expense', true),
+    (NEW.id, 'Saúde', 'health.svg', '#10B981', 'expense', true),
+    (NEW.id, 'Lazer', 'entertainment.svg', '#EC4899', 'expense', true),
+    (NEW.id, 'Compras', 'shopping.svg', '#F97316', 'expense', true),
+    (NEW.id, 'Pets', 'pets.svg', '#8B4513', 'expense', true),
+    (NEW.id, 'Educação', 'education.svg', '#6366F1', 'expense', true),
+    (NEW.id, 'Outros', 'other.svg', '#6B7280', 'expense', true);
   
   RETURN NEW;
 END;

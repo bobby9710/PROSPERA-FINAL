@@ -1,11 +1,14 @@
 import { ArrowDownLeft, ArrowUpRight, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { formatFriendlyDate } from "@/lib/date-utils";
 
 interface Transaction {
   id: string;
   description: string;
   category: string;
+  categoryIcon?: string;
+  categoryColor?: string;
   amount: number;
   type: "income" | "expense";
   date: string;
@@ -24,11 +27,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-    });
+    return formatFriendlyDate(dateString);
   };
 
   return (
@@ -52,16 +51,27 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
           >
             <div
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                transaction.type === "income"
-                  ? "bg-success/10"
-                  : "bg-destructive/10"
+                "w-10 h-10 rounded-full flex items-center justify-center p-2.5 shrink-0 shadow-sm",
+                !transaction.categoryIcon && (
+                  transaction.type === "income"
+                    ? "bg-success text-white"
+                    : "bg-destructive text-white"
+                )
               )}
+              style={transaction.categoryIcon ? { backgroundColor: transaction.categoryColor } : {}}
             >
-              {transaction.type === "income" ? (
-                <ArrowDownLeft className="w-5 h-5 text-success" />
+              {transaction.categoryIcon?.endsWith('.svg') ? (
+                <img 
+                  src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${transaction.categoryIcon}`} 
+                  alt={transaction.category}
+                  className="w-full h-full object-contain brightness-0 invert"
+                />
+              ) : transaction.categoryIcon ? (
+                <span className="text-lg text-white font-bold">{transaction.categoryIcon}</span>
+              ) : transaction.type === "income" ? (
+                <ArrowDownLeft className="w-5 h-5" />
               ) : (
-                <ArrowUpRight className="w-5 h-5 text-destructive" />
+                <ArrowUpRight className="w-5 h-5" />
               )}
             </div>
 
