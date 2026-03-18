@@ -438,11 +438,27 @@ export default function Transactions() {
                     <SelectTrigger>
                       <SelectValue placeholder="Todas" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas</SelectItem>
-                      {categories?.map(cat => (
+                    <SelectContent className="max-h-[300px] overflow-y-auto">
+                      <SelectItem value="all" className="font-semibold">Todas as categorias</SelectItem>
+                      {categories?.filter(cat => filter === "all" || cat.type === filter).map(cat => (
                         <SelectItem key={cat.id} value={cat.id}>
-                          {cat.icon} {cat.name}
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-6 h-6 rounded-full flex items-center justify-center p-1 shrink-0"
+                              style={{ backgroundColor: cat.color }}
+                            >
+                              {cat.icon?.endsWith('.svg') ? (
+                                <img 
+                                  src={`/icons/categorias/${cat.type === 'income' ? 'receitas' : 'despesas'}/${cat.icon}`} 
+                                  alt=""
+                                  className="w-full h-full object-contain brightness-0 invert"
+                                />
+                              ) : (
+                                <span className="text-xs text-white">{cat.icon || "📦"}</span>
+                              )}
+                            </div>
+                            <span>{cat.name}</span>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>

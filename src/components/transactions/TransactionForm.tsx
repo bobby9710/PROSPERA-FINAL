@@ -349,7 +349,10 @@ export function TransactionForm({
                   </SelectTrigger>
                   <SelectContent>
                     {creditCards?.map((card) => {
-                      const iconFile = BANK_ICONS[card.brand.toLowerCase()];
+                      // Support both old and new format banco:bandeira
+                      const bankId = card.brand.includes(":") ? card.brand.split(":")[0] : card.brand;
+                      const iconFile = BANK_ICONS[bankId.toLowerCase()];
+                      
                       return (
                         <SelectItem key={card.id} value={card.id}>
                           <div className="flex items-center gap-3">
@@ -357,7 +360,7 @@ export function TransactionForm({
                               {iconFile ? (
                                 <img 
                                   src={`/icons/bancos/${iconFile}`} 
-                                  alt={card.brand} 
+                                  alt={bankId} 
                                   className="w-full h-full object-contain"
                                 />
                               ) : (

@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
-import { Plus, CreditCard, Trash2, Loader2, Receipt, History, ChevronRight, Eye } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, CreditCard, Trash2, Loader2, Receipt, History, ChevronRight, Eye, Pencil, Edit2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useCreditCards, useCreditCardStats, useCreateCreditCard, useDeleteCreditCard, CreditCard as CreditCardType, BANK_ICONS } from "@/hooks/useCreditCards";
+import { useCreditCards, useCreditCardStats, useCreateCreditCard, useDeleteCreditCard, useUpdateCreditCard, CreditCard as CreditCardType, BANK_ICONS, BANKS, BRANDS, BANK_COLORS } from "@/hooks/useCreditCards";
 import { useCardTransactions } from "@/hooks/useTransactions";
 import {
   Dialog,
@@ -45,19 +45,31 @@ export default function Cards() {
   const [showBillHistory, setShowBillHistory] = useState(false);
   const [selectedCard, setSelectedCard] = useState<(CreditCardType & { used: number; available: number; currentBill: number }) | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   
   // Form state
   const [name, setName] = useState("");
   const [lastDigits, setLastDigits] = useState("");
+  const [bank, setBank] = useState("nubank");
   const [brand, setBrand] = useState("visa");
   const [creditLimit, setCreditLimit] = useState("");
   const [closingDay, setClosingDay] = useState("");
   const [dueDay, setDueDay] = useState("");
   const [color, setColor] = useState(cardColors[0]);
 
+  // Update color automatically when bank changes
+  useEffect(() => {
+    if (bank && bank !== "other" && BANK_COLORS[bank as keyof typeof BANK_COLORS]) {
+      const bankColor = BANK_COLORS[bank as keyof typeof BANK_COLORS];
+      if (bankColor) setColor(bankColor);
+    }
+  }, [bank]);
+
   const { data: cards, isLoading } = useCreditCardStats();
   const createCard = useCreateCreditCard();
   const deleteCard = useDeleteCreditCard();
+  const updateCard = useUpdateCreditCard();
 
   // Fetch transactions for selected card
   const { data: cardTransactions = [] } = useCardTransactions(selectedCard?.id || null);
@@ -69,18 +81,39 @@ export default function Cards() {
     }).format(value);
   };
 
-  const getBrandIcon = (card: CreditCardType) => {
-    const iconFile = BANK_ICONS[card.brand.toLowerCase()];
-    if (iconFile) {
-      return (
-        <img 
-          src={`/icons/bancos/${iconFile}`} 
-          alt={card.brand} 
-          className="h-8 object-contain brightness-0 invert" 
-        />
-      );
+  const getCardIcons = (card: CreditCardType) => {
+    // If brand contains a colon, it's the new format banco:bandeira
+    let bankId = "";
+    let brandId = "";
+    
+    if (card.brand.includes(":")) {
+      [bankId, brandId] = card.brand.split(":");
+    } else {
+      // Legacy format or single value
+      brandId = card.brand;
     }
-    return <span className="text-lg font-bold tracking-wider">{card.brand.toUpperCase()}</span>;
+
+    const bankIconFile = BANKS[bankId.toLowerCase() as keyof typeof BANKS];
+    const brandIconFile = BRANDS[brandId.toLowerCase() as keyof typeof BRANDS];
+
+    return {
+      bankIcon: bankIconFile ? (
+        <img 
+          src={`/icons/bancos/${bankIconFile}`} 
+          alt={bankId} 
+          className="h-14 object-contain mix-blend-multiply" 
+        />
+      ) : null,
+      brandIcon: brandIconFile ? (
+        <img 
+          src={`/icons/bancos/${brandIconFile}`} 
+          alt={brandId} 
+          className="h-16 object-contain mix-blend-multiply" 
+        />
+      ) : (
+        <span className="text-lg font-bold tracking-wider">{brandId.toUpperCase()}</span>
+      )
+    };
   };
 
   // Generate mock history for demonstration
@@ -99,7 +132,7 @@ export default function Cards() {
     return history;
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !lastDigits || !creditLimit || !closingDay || !dueDay) {
       toast.error("Preencha todos os campos obrigatórios");
@@ -111,21 +144,28 @@ export default function Cards() {
       return;
     }
 
+    const cardData = {
+      name,
+      last_digits: lastDigits,
+      brand: `${bank}:${brand}`,
+      credit_limit: parseFloat(creditLimit),
+      closing_day: parseInt(closingDay),
+      due_day: parseInt(dueDay),
+      color,
+    };
+
     try {
-      await createCard.mutateAsync({
-        name,
-        last_digits: lastDigits,
-        brand,
-        credit_limit: parseFloat(creditLimit),
-        closing_day: parseInt(closingDay),
-        due_day: parseInt(dueDay),
-        color,
-      });
-      toast.success("Cartão criado com sucesso!");
+      if (isEditing && editingId) {
+        await updateCard.mutateAsync({ id: editingId, data: cardData });
+        toast.success("Cartão atualizado com sucesso!");
+      } else {
+        await createCard.mutateAsync(cardData);
+        toast.success("Cartão criado com sucesso!");
+      }
       setShowCreateDialog(false);
       resetForm();
     } catch (error) {
-      toast.error("Erro ao criar cartão");
+      toast.error(isEditing ? "Erro ao atualizar cartão" : "Erro ao criar cartão");
     }
   };
 
@@ -141,13 +181,43 @@ export default function Cards() {
   };
 
   const resetForm = () => {
+    setEditingId(null);
+    setIsEditing(false);
     setName("");
     setLastDigits("");
+    setBank("nubank");
     setBrand("visa");
     setCreditLimit("");
     setClosingDay("");
     setDueDay("");
     setColor(cardColors[0]);
+  };
+
+  const handleOpenCreate = () => {
+    resetForm();
+    setShowCreateDialog(true);
+  };
+
+  const handleEdit = (card: CreditCardType) => {
+    setIsEditing(true);
+    setEditingId(card.id);
+    setName(card.name);
+    setLastDigits(card.last_digits);
+    
+    if (card.brand.includes(":")) {
+      const [b, br] = card.brand.split(":");
+      setBank(b);
+      setBrand(br);
+    } else {
+      setBank("nubank");
+      setBrand(card.brand);
+    }
+    
+    setCreditLimit(String(card.credit_limit));
+    setClosingDay(String(card.closing_day));
+    setDueDay(String(card.due_day));
+    setColor(card.color);
+    setShowCreateDialog(true);
   };
 
   const openBillDetails = (card: CreditCardType & { used: number; available: number; currentBill: number }) => {
@@ -184,7 +254,7 @@ export default function Cards() {
             Gerencie seus cartões e faturas
           </p>
         </div>
-        <Button className="btn-gradient" onClick={() => setShowCreateDialog(true)}>
+        <Button className="btn-gradient" onClick={handleOpenCreate}>
           <Plus className="w-5 h-5 mr-2" />
           Novo Cartão
         </Button>
@@ -246,10 +316,10 @@ export default function Cards() {
                   
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-8">
-                      <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                        <CreditCard className="w-6 h-6" />
+                      <div className="min-w-[64px] min-h-[64px] flex items-center justify-center">
+                        {getCardIcons(card).bankIcon || <CreditCard className="w-12 h-12" />}
                       </div>
-                      {getBrandIcon(card)}
+                      {getCardIcons(card).brandIcon}
                     </div>
                     
                     <div className="mb-6">
@@ -284,6 +354,15 @@ export default function Cards() {
                         title="Ver detalhes da fatura"
                       >
                         <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(card)}
+                        title="Editar cartão"
+                        className="text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -354,16 +433,21 @@ export default function Cards() {
         </div>
       )}
 
-      {/* Create Card Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog 
+        open={showCreateDialog} 
+        onOpenChange={(open) => {
+          setShowCreateDialog(open);
+          if (!open) resetForm();
+        }}
+      >
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Novo Cartão</DialogTitle>
+            <DialogTitle>{isEditing ? "Editar Cartão" : "Novo Cartão"}</DialogTitle>
             <DialogDescription>
-              Adicione um novo cartão de crédito.
+              {isEditing ? "Altere as informações do seu cartão." : "Adicione um novo cartão de crédito."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label>Nome do cartão *</Label>
               <Input
@@ -376,6 +460,57 @@ export default function Cards() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label>Banco</Label>
+                <Select value={bank} onValueChange={setBank}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {Object.keys(BANKS).sort().map((b) => (
+                      <SelectItem key={b} value={b} className="capitalize">
+                        <div className="flex items-center gap-2">
+                          {b === 'other' ? (
+                            <CreditCard className="w-5 h-5 text-muted-foreground" />
+                          ) : (
+                            <img 
+                              src={`/icons/bancos/${BANKS[b as keyof typeof BANKS]}`} 
+                              alt="" 
+                              className="w-5 h-5 object-contain"
+                            />
+                          )}
+                          {b === 'other' ? 'Outro Banco' : b}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Bandeira</Label>
+                <Select value={brand} onValueChange={setBrand}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(BRANDS).sort().map((b) => (
+                      <SelectItem key={b} value={b} className="capitalize">
+                        <div className="flex items-center gap-2">
+                          <img 
+                            src={`/icons/bancos/${BRANDS[b as keyof typeof BRANDS]}`} 
+                            alt="" 
+                            className="w-5 h-5 object-contain"
+                          />
+                          {b}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label>Últimos 4 dígitos *</Label>
                 <Input
                   value={lastDigits}
@@ -386,21 +521,9 @@ export default function Cards() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Bandeira</Label>
-                <Select value={brand} onValueChange={setBrand}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <div className="grid grid-cols-2 gap-1 p-1">
-                      {Object.keys(BANK_ICONS).sort().map((b) => (
-                        <SelectItem key={b} value={b} className="capitalize">
-                          {b}
-                        </SelectItem>
-                      ))}
-                    </div>
-                  </SelectContent>
-                </Select>
+                {/* Empty space to align with the layout */}
+                <Label>&nbsp;</Label>
+                <div className="h-10" />
               </div>
             </div>
 
@@ -450,26 +573,34 @@ export default function Cards() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Cor</Label>
-              <div className="flex flex-wrap gap-2">
-                {cardColors.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    className={cn(
-                      "w-10 h-10 rounded-lg border-2 transition-all",
-                      color === c ? "border-foreground scale-110" : "border-transparent"
-                    )}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
+            {(bank === "other" || !BANK_COLORS[bank as keyof typeof BANK_COLORS]) && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                <Label>Cor Personalizada</Label>
+                <div className="flex flex-wrap gap-2">
+                  {cardColors.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setColor(c)}
+                      className={cn(
+                        "w-10 h-10 rounded-lg border-2 transition-all",
+                        color === c ? "border-foreground scale-110" : "border-transparent"
+                      )}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <Button type="submit" className="w-full btn-gradient" disabled={createCard.isPending}>
-              {createCard.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Criar Cartão"}
+            <Button type="submit" className="w-full btn-gradient" disabled={createCard.isPending || updateCard.isPending}>
+              {createCard.isPending || updateCard.isPending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : isEditing ? (
+                "Salvar Alterações"
+              ) : (
+                "Criar Cartão"
+              )}
             </Button>
           </form>
         </DialogContent>

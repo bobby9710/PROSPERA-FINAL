@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
 
-export const BANK_ICONS: Record<string, string> = {
+export const BANKS = {
   "nubank": "nubank.png",
   "itau": "itau.png",
   "bradesco": "bradesco.png",
@@ -21,17 +21,50 @@ export const BANK_ICONS: Record<string, string> = {
   "sicredi": "sicredi.png",
   "agibank": "agibank.png",
   "banrisul": "banrisul.png",
-  "visa": "visa.png",
-  "mastercard": "mastercard.png",
-  "elo": "elo.png",
-  "hipercard": "hipercard.png",
   "amazon": "amazon.png",
   "carrefour": "carrefour.png",
   "99pay": "99Pay.png",
   "paypal": "paypal.png",
   "senff": "senff.png",
-  "superdigital": "superdigital.png"
+  "superdigital": "superdigital.png",
+  "other": "credit-card"
 };
+
+export const BANK_COLORS: Record<string, string> = {
+  "nubank": "#8B5CF6", // Roxo Nubank
+  "itau": "#FF5F00", // Laranja Itaú
+  "bradesco": "#CC092F", // Vermelho Bradesco
+  "bb": "#FCFD01", // Amarelo BB (texto azul)
+  "santander": "#EC0000", // Vermelho Santander
+  "inter": "#FF7A00", // Laranja Inter
+  "c6": "#212121", // Preto C6
+  "neon": "#00E5FF", // Azul Neon
+  "pan": "#000000", // Azul Pan
+  "pagbank": "#FFD700", // Amarelo PagBank
+  "next": "#00FF5F", // Verder Next
+  "picpay": "#21C25E", // Verde PicPay
+  "mercadopago": "#009EE3", // Azul Mercado Pago
+  "sicoob": "#003641", // Verde Sicoob
+  "sicredi": "#32BC71", // Verde Sicredi
+  "agibank": "#00C2FF", // Azul Agibank
+  "banrisul": "#0056A4", // Azul Banrisul
+  "amazon": "#232F3E", // Azul Escuro Amazon
+  "carrefour": "#00358e", // Azul Carrefour
+  "99pay": "#FBC02D", // Amarelo 99
+  "paypal": "#003087", // Azul PayPal
+  "senff": "#111111", // Azul Senff
+  "superdigital": "#00AEEF" // Azul Superdigital
+};
+
+export const BRANDS = {
+  "visa": "visa.png",
+  "mastercard": "mastercard.png",
+  "master-black": "master-black.png",
+  "elo": "elo.png",
+  "hipercard": "hipercard.png"
+};
+
+export const BANK_ICONS: Record<string, string> = { ...BANKS, ...BRANDS };
 
 export interface CreditCard {
   id: string;
@@ -190,6 +223,39 @@ export function useDeleteCreditCard() {
     onError: (error) => {
       toast({
         title: "Erro ao remover cartão",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useUpdateCreditCard() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateCreditCardData> }) => {
+      const { error } = await supabase
+        .from("credit_cards")
+        .update({
+          ...data,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["credit_cards"] });
+      toast({
+        title: "Cartão atualizado",
+        description: "As informações do cartão foram salvas.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao atualizar cartão",
         description: error.message,
         variant: "destructive",
       });

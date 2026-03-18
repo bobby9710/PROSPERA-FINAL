@@ -19,6 +19,8 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, addDays, addWeeks, addMonths, addYears, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { parseISOToLocal, formatFullDate } from "@/lib/date-utils";
+import { Transaction } from "@/hooks/useTransactions";
 
 type ViewMode = "day" | "week" | "month" | "year";
 
@@ -42,12 +44,11 @@ export default function Timeline() {
     }
   }, [currentDate, viewMode]);
 
-  // Filter transactions by date range
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
-      const date = new Date(t.date);
+      const date = parseISOToLocal(t.date);
       return date >= dateRange.start && date <= dateRange.end;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }).sort((a, b) => parseISOToLocal(b.date).getTime() - parseISOToLocal(a.date).getTime());
   }, [transactions, dateRange]);
 
   // Group transactions by day
@@ -63,7 +64,7 @@ export default function Timeline() {
     });
     
     return Object.entries(groups).sort((a, b) => 
-      new Date(b[0]).getTime() - new Date(a[0]).getTime()
+      parseISOToLocal(b[0]).getTime() - parseISOToLocal(a[0]).getTime()
     );
   }, [filteredTransactions]);
 
@@ -126,7 +127,7 @@ export default function Timeline() {
   };
 
   const getDayLabel = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = parseISOToLocal(dateStr);
     const today = new Date();
     const yesterday = addDays(today, -1);
 
@@ -246,7 +247,7 @@ export default function Timeline() {
                         <div>
                           <p className="font-semibold capitalize">{getDayLabel(date)}</p>
                           <p className="text-xs text-muted-foreground">
-                            {format(new Date(date), "dd/MM/yyyy")}
+                            {formatFullDate(date)}
                           </p>
                         </div>
                         <div className="flex gap-3 text-sm">
@@ -268,18 +269,35 @@ export default function Timeline() {
                             <div className="flex items-center gap-4">
                               <div
                                 className={cn(
-                                  "w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0",
-                                  transaction.type === "income"
-                                    ? "bg-success/20"
-                                    : "bg-destructive/20"
+                                  "w-10 h-10 rounded-full flex items-center justify-center p-2 shrink-0 shadow-sm",
+                                  !(transaction as any).category?.icon && (
+                                    transaction.type === "income"
+                                      ? "bg-success text-white"
+                                      : "bg-destructive text-white"
+                                  )
                                 )}
+                                style={(transaction as any).category?.icon ? { backgroundColor: (transaction as any).category.color } : {}}
                               >
-                                {(transaction as any).categories?.icon || (transaction.type === "income" ? "💰" : "💸")}
+                                {(transaction as any).category?.icon?.endsWith('.svg') ? (
+                                  <img 
+                                    src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${(transaction as any).category.icon}`} 
+                                    alt=""
+                                    className="w-full h-full object-contain"
+                                  />
+                                ) : (transaction as any).category?.icon ? (
+                                  <span className="text-xl text-white font-bold">
+                                    {(transaction as any).category.icon}
+                                  </span>
+                                ) : transaction.type === "income" ? (
+                                  <Clock className="w-5 h-5 text-white" />
+                                ) : (
+                                  <Clock className="w-5 h-5 text-white" />
+                                )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium truncate">{transaction.description}</p>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <span>{(transaction as any).categories?.name || "Sem categoria"}</span>
+                                  <span>{(transaction as any).category?.name || "Sem categoria"}</span>
                                   {transaction.payment_method && (
                                     <>
                                       <span>•</span>

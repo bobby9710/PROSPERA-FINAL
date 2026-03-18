@@ -64,7 +64,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                 <img 
                   src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${transaction.categoryIcon}`} 
                   alt={transaction.category}
-                  className="w-full h-full object-contain brightness-0 invert"
+                  className="w-full h-full object-contain"
                 />
               ) : transaction.categoryIcon ? (
                 <span className="text-lg text-white font-bold">{transaction.categoryIcon}</span>
