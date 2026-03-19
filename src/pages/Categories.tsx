@@ -70,7 +70,7 @@ const INCOME_SVG_ICONS = [
 ];
 
 const categoryColors = [
-  "#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", 
+  "#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6",
   "#EC4899", "#6366F1", "#14B8A6", "#F97316", "#84CC16"
 ];
 
@@ -79,7 +79,7 @@ export default function Categories() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  
+
   // Form state
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("📦");
@@ -97,9 +97,9 @@ export default function Categories() {
   // Auto-seed if premium catalog is incomplete (trigger if less than 21 premium categories)
   useEffect(() => {
     if (isLoading) return;
-    
+
     const premiumCount = [...(expenseCategories || []), ...(incomeCategories || [])].filter(c => c.icon?.endsWith('.svg')).length;
-    
+
     if (premiumCount < 21 && !seedCategories.isPending) {
       seedCategories.mutate();
     }
@@ -187,8 +187,8 @@ export default function Categories() {
         </TabsList>
 
         <TabsContent value="expense" className="mt-0">
-          <CategoriesGrid 
-            categories={expenseCategories || []} 
+          <CategoriesGrid
+            categories={expenseCategories || []}
             isLoading={expenseLoading}
             onEdit={handleOpenEdit}
             onDelete={setDeleteId}
@@ -197,8 +197,8 @@ export default function Categories() {
         </TabsContent>
 
         <TabsContent value="income" className="mt-0">
-          <CategoriesGrid 
-            categories={incomeCategories || []} 
+          <CategoriesGrid
+            categories={incomeCategories || []}
             isLoading={incomeLoading}
             onEdit={handleOpenEdit}
             onDelete={setDeleteId}
@@ -213,8 +213,8 @@ export default function Categories() {
           <DialogHeader>
             <DialogTitle>{editingCategory ? "Editar Categoria" : "Nova Categoria"}</DialogTitle>
             <DialogDescription>
-              {editingCategory 
-                ? "Atualize os dados da categoria." 
+              {editingCategory
+                ? "Atualize os dados da categoria."
                 : `Crie uma nova categoria de ${activeTab === "expense" ? "despesa" : "receita"}.`}
             </DialogDescription>
           </DialogHeader>
@@ -246,8 +246,8 @@ export default function Categories() {
                     )}
                     title={i.name}
                   >
-                    <img 
-                      src={`/icons/categorias/${activeTab === "expense" ? "despesas" : "receitas"}/${i.file}`} 
+                    <img
+                      src={`/icons/categorias/${activeTab === "expense" ? "despesas" : "receitas"}/${i.file}`}
                       alt={i.name}
                       className="w-full h-full object-contain"
                       style={{ filter: icon === i.file ? `drop-shadow(0 0 1px ${color})` : 'none' }}
@@ -275,9 +275,9 @@ export default function Categories() {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full btn-gradient" 
+            <Button
+              type="submit"
+              className="w-full btn-gradient"
               disabled={createCategory.isPending || updateCategory.isPending}
             >
               {(createCategory.isPending || updateCategory.isPending) ? (
@@ -302,7 +302,7 @@ export default function Categories() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -355,8 +355,8 @@ function CategoriesGrid({ categories, isLoading, onEdit, onDelete, type }: Categ
                     style={{ backgroundColor: category.color }}
                   >
                     {category.icon?.endsWith('.svg') ? (
-                      <img 
-                        src={`/icons/categorias/${type === 'income' ? 'receitas' : 'despesas'}/${category.icon}`} 
+                      <img
+                        src={`/icons/categorias/${type === 'income' ? 'receitas' : 'despesas'}/${category.icon}`}
                         alt={category.name}
                         className="w-full h-full object-contain brightness-0 invert"
                       />
@@ -371,7 +371,7 @@ function CategoriesGrid({ categories, isLoading, onEdit, onDelete, type }: Categ
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"

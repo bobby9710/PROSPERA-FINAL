@@ -47,7 +47,7 @@ export default function Cards() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // Form state
   const [name, setName] = useState("");
   const [lastDigits, setLastDigits] = useState("");
@@ -85,7 +85,7 @@ export default function Cards() {
     // If brand contains a colon, it's the new format banco:bandeira
     let bankId = "";
     let brandId = "";
-    
+
     if (card.brand.includes(":")) {
       [bankId, brandId] = card.brand.split(":");
     } else {
@@ -98,17 +98,17 @@ export default function Cards() {
 
     return {
       bankIcon: bankIconFile ? (
-        <img 
-          src={`/icons/bancos/${bankIconFile}`} 
-          alt={bankId} 
-          className="h-14 object-contain mix-blend-multiply" 
+        <img
+          src={`/icons/bancos/${bankIconFile}`}
+          alt={bankId}
+          className="h-14 object-contain mix-blend-multiply"
         />
       ) : null,
       brandIcon: brandIconFile ? (
-        <img 
-          src={`/icons/bancos/${brandIconFile}`} 
-          alt={brandId} 
-          className="h-16 object-contain mix-blend-multiply" 
+        <img
+          src={`/icons/bancos/${brandIconFile}`}
+          alt={brandId}
+          className="h-16 object-contain mix-blend-multiply"
         />
       ) : (
         <span className="text-lg font-bold tracking-wider">{brandId.toUpperCase()}</span>
@@ -203,7 +203,7 @@ export default function Cards() {
     setEditingId(card.id);
     setName(card.name);
     setLastDigits(card.last_digits);
-    
+
     if (card.brand.includes(":")) {
       const [b, br] = card.brand.split(":");
       setBank(b);
@@ -212,7 +212,7 @@ export default function Cards() {
       setBank("nubank");
       setBrand(card.brand);
     }
-    
+
     setCreditLimit(String(card.credit_limit));
     setClosingDay(String(card.closing_day));
     setDueDay(String(card.due_day));
@@ -231,16 +231,16 @@ export default function Cards() {
   };
 
   // Summary calculations
-  const totalLimit = useMemo(() => 
-    (cards || []).reduce((acc, c) => acc + Number(c.credit_limit), 0), 
+  const totalLimit = useMemo(() =>
+    (cards || []).reduce((acc, c) => acc + Number(c.credit_limit), 0),
     [cards]
   );
-  const totalUsed = useMemo(() => 
-    (cards || []).reduce((acc, c) => acc + c.used, 0), 
+  const totalUsed = useMemo(() =>
+    (cards || []).reduce((acc, c) => acc + c.used, 0),
     [cards]
   );
-  const totalAvailable = useMemo(() => 
-    (cards || []).reduce((acc, c) => acc + c.available, 0), 
+  const totalAvailable = useMemo(() =>
+    (cards || []).reduce((acc, c) => acc + c.available, 0),
     [cards]
   );
 
@@ -313,7 +313,7 @@ export default function Cards() {
                 >
                   <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20" />
                   <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16" />
-                  
+
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-8">
                       <div className="min-w-[64px] min-h-[64px] flex items-center justify-center">
@@ -321,7 +321,7 @@ export default function Cards() {
                       </div>
                       {getCardIcons(card).brandIcon}
                     </div>
-                    
+
                     <div className="mb-6">
                       <p className="text-white/70 text-sm mb-1">Número do cartão</p>
                       <p className="text-xl font-mono tracking-widest">
@@ -417,8 +417,8 @@ export default function Cards() {
                     </div>
                   </div>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full mt-4"
                     onClick={() => openBillDetails(card)}
                   >
@@ -433,8 +433,8 @@ export default function Cards() {
         </div>
       )}
 
-      <Dialog 
-        open={showCreateDialog} 
+      <Dialog
+        open={showCreateDialog}
         onOpenChange={(open) => {
           setShowCreateDialog(open);
           if (!open) resetForm();
@@ -472,9 +472,9 @@ export default function Cards() {
                           {b === 'other' ? (
                             <CreditCard className="w-5 h-5 text-muted-foreground" />
                           ) : (
-                            <img 
-                              src={`/icons/bancos/${BANKS[b as keyof typeof BANKS]}`} 
-                              alt="" 
+                            <img
+                              src={`/icons/bancos/${BANKS[b as keyof typeof BANKS]}`}
+                              alt=""
                               className="w-5 h-5 object-contain"
                             />
                           )}
@@ -495,9 +495,9 @@ export default function Cards() {
                     {Object.keys(BRANDS).sort().map((b) => (
                       <SelectItem key={b} value={b} className="capitalize">
                         <div className="flex items-center gap-2">
-                          <img 
-                            src={`/icons/bancos/${BRANDS[b as keyof typeof BRANDS]}`} 
-                            alt="" 
+                          <img
+                            src={`/icons/bancos/${BRANDS[b as keyof typeof BRANDS]}`}
+                            alt=""
                             className="w-5 h-5 object-contain"
                           />
                           {b}
@@ -508,7 +508,7 @@ export default function Cards() {
                 </Select>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Últimos 4 dígitos *</Label>
@@ -644,7 +644,7 @@ export default function Cards() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

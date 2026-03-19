@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
-import { 
-  Plus, 
-  Search, 
-  ArrowDownLeft, 
+import {
+  Plus,
+  Search,
+  ArrowDownLeft,
   ArrowUpRight,
   Trash2,
   Calendar,
@@ -19,9 +19,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { 
-  useTransactions, 
-  useDeleteTransaction, 
+import {
+  useTransactions,
+  useDeleteTransaction,
   useCreateTransaction,
   useUpdateTransaction,
   Transaction,
@@ -73,12 +73,12 @@ export default function Transactions() {
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Modal states
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit" | "duplicate">("create");
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  
+
   // Period filter state
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
@@ -107,15 +107,15 @@ export default function Transactions() {
   const filteredTransactions = useMemo(() => {
     let result = (transactions || []).filter((t) => {
       const transactionDate = parseISOToLocal(t.date);
-      const matchesPeriod = 
-        transactionDate.getMonth() === selectedMonth && 
+      const matchesPeriod =
+        transactionDate.getMonth() === selectedMonth &&
         transactionDate.getFullYear() === selectedYear;
       const matchesType = filter === "all" || t.type === filter;
       const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            (t.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+        (t.category?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = categoryFilter === "all" || t.category_id === categoryFilter;
       const matchesPaymentMethod = paymentMethodFilter === "all" || t.payment_method === paymentMethodFilter;
-      
+
       return matchesPeriod && matchesType && matchesSearch && matchesCategory && matchesPaymentMethod;
     });
 
@@ -323,7 +323,7 @@ export default function Transactions() {
           <Button variant="ghost" size="icon" onClick={goToPreviousMonth} className="h-9 w-9 rounded-xl">
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          
+
           <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" className="h-9 font-bold px-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors">
@@ -375,7 +375,7 @@ export default function Transactions() {
               </div>
             </PopoverContent>
           </Popover>
-          
+
           <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-9 w-9 rounded-xl">
             <ChevronRight className="w-5 h-5" />
           </Button>
@@ -417,7 +417,7 @@ export default function Transactions() {
             className="pl-10"
           />
         </div>
-        
+
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
           {/* Advanced Filters */}
           <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
@@ -443,13 +443,13 @@ export default function Transactions() {
                       {categories?.filter(cat => filter === "all" || cat.type === filter).map(cat => (
                         <SelectItem key={cat.id} value={cat.id}>
                           <div className="flex items-center gap-2">
-                            <div 
+                            <div
                               className="w-6 h-6 rounded-full flex items-center justify-center p-1 shrink-0"
                               style={{ backgroundColor: cat.color }}
                             >
                               {cat.icon?.endsWith('.svg') ? (
-                                <img 
-                                  src={`/icons/categorias/${cat.type === 'income' ? 'receitas' : 'despesas'}/${cat.icon}`} 
+                                <img
+                                  src={`/icons/categorias/${cat.type === 'income' ? 'receitas' : 'despesas'}/${cat.icon}`}
                                   alt=""
                                   className="w-full h-full object-contain brightness-0 invert"
                                 />
@@ -475,12 +475,12 @@ export default function Transactions() {
                       <SelectItem value="all">Todos</SelectItem>
                       {paymentMethods.map(pm => (
                         <SelectItem key={pm} value={pm}>
-                          {pm === "pix" ? "PIX" : 
-                           pm === "credit" ? "Crédito" :
-                           pm === "debit" ? "Débito" :
-                           pm === "cash" ? "Dinheiro" :
-                           pm === "transfer" ? "Transferência" :
-                           pm === "boleto" ? "Boleto" : pm}
+                          {pm === "pix" ? "PIX" :
+                            pm === "credit" ? "Crédito" :
+                              pm === "debit" ? "Débito" :
+                                pm === "cash" ? "Dinheiro" :
+                                  pm === "transfer" ? "Transferência" :
+                                    pm === "boleto" ? "Boleto" : pm}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -570,8 +570,8 @@ export default function Transactions() {
                     style={transaction.category?.icon ? { backgroundColor: transaction.category.color } : {}}
                   >
                     {transaction.category?.icon?.endsWith('.svg') ? (
-                      <img 
-                        src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${transaction.category.icon}`} 
+                      <img
+                        src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${transaction.category.icon}`}
                         alt={transaction.category.name}
                         className="w-full h-full object-contain brightness-0 invert"
                       />
@@ -602,11 +602,11 @@ export default function Transactions() {
                         <>
                           <span className="text-muted-foreground/50 hidden sm:inline">•</span>
                           <span className="text-xs sm:text-sm text-muted-foreground capitalize hidden sm:inline">
-                            {transaction.payment_method === "pix" ? "PIX" : 
-                             transaction.payment_method === "credit" ? "Crédito" :
-                             transaction.payment_method === "debit" ? "Débito" :
-                             transaction.payment_method === "cash" ? "Dinheiro" :
-                             transaction.payment_method}
+                            {transaction.payment_method === "pix" ? "PIX" :
+                              transaction.payment_method === "credit" ? "Crédito" :
+                                transaction.payment_method === "debit" ? "Débito" :
+                                  transaction.payment_method === "cash" ? "Dinheiro" :
+                                    transaction.payment_method}
                           </span>
                         </>
                       )}
@@ -629,25 +629,25 @@ export default function Transactions() {
 
                   {/* Actions - visible on mobile */}
                   <div className="flex gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="shrink-0 h-8 w-8 sm:h-9 sm:w-9"
                       onClick={() => handleEdit(transaction)}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 hidden sm:flex"
                       onClick={() => handleDuplicate(transaction)}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => setDeleteId(transaction.id)}
                     >
@@ -685,7 +685,7 @@ export default function Transactions() {
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
-                      
+
                       return (
                         <Button
                           key={pageNum}
@@ -735,7 +735,7 @@ export default function Transactions() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

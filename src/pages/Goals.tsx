@@ -68,7 +68,7 @@ export default function Goals() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [activeTab, setActiveTab] = useState("active");
-  
+
   // Create form state
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
@@ -76,7 +76,7 @@ export default function Goals() {
   const [icon, setIcon] = useState("🎯");
   const [color, setColor] = useState(goalColors[0]);
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
-  
+
   // Contribute form state
   const [contributeAmount, setContributeAmount] = useState("");
   const [contributeNotes, setContributeNotes] = useState("");
@@ -170,7 +170,7 @@ export default function Goals() {
         amount,
         notes: contributeNotes || undefined,
       });
-      
+
       // Check if goal is now completed
       if (newTotal >= target) {
         await updateGoalStatus.mutateAsync({ id: selectedGoal.id, status: "completed" });
@@ -179,7 +179,7 @@ export default function Goals() {
       } else {
         toast.success("Contribuição registrada com sucesso!");
       }
-      
+
       setShowContributeDialog(false);
       setSelectedGoal(null);
       setContributeAmount("");
@@ -338,9 +338,9 @@ export default function Goals() {
         {/* Actions */}
         {!isCompleted && (
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="flex-1 text-xs sm:text-sm h-9 sm:h-10"
               onClick={() => openContributeDialog(goal)}
             >
@@ -599,9 +599,9 @@ export default function Goals() {
               <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
-                  style={{ 
+                  style={{
                     width: `${Math.min((Number(selectedGoal.current_amount) / Number(selectedGoal.target_amount)) * 100, 100)}%`,
-                    background: selectedGoal.color 
+                    background: selectedGoal.color
                   }}
                 />
               </div>
@@ -669,7 +669,7 @@ export default function Goals() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

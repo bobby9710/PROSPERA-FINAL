@@ -5,15 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSubscription, useIsPremium, useCreateCheckout, useManageSubscription, useCheckSubscription } from "@/hooks/useSubscription";
-import { 
-  Crown, 
-  Check, 
-  X, 
-  Zap, 
-  TrendingUp, 
-  FileText, 
-  Building2, 
-  Camera, 
+import {
+  Crown,
+  Check,
+  X,
+  Zap,
+  TrendingUp,
+  FileText,
+  Building2,
+  Camera,
   BookOpen,
   BarChart3,
   Shield,
@@ -140,7 +140,7 @@ export default function Premium() {
   // Check subscription status periodically
   useEffect(() => {
     checkSubscription.mutate();
-    
+
     const interval = setInterval(() => {
       checkSubscription.mutate();
     }, 60000); // Check every minute
@@ -223,11 +223,10 @@ export default function Premium() {
           {plans.map((plan) => (
             <Card
               key={plan.name}
-              className={`relative ${
-                plan.popular
+              className={`relative ${plan.popular
                   ? "border-primary shadow-lg shadow-primary/20 scale-105"
                   : ""
-              }`}
+                }`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">

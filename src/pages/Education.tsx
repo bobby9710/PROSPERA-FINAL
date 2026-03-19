@@ -15,13 +15,13 @@ import { BookOpen, Video, HelpCircle, Calculator, BookMarked, Search, Clock, Cro
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function Education() {
-  const { 
-    articles, 
-    videos, 
-    quizzes, 
-    glossary, 
+  const {
+    articles,
+    videos,
+    quizzes,
+    glossary,
     quizResults,
-    loadingContents, 
+    loadingContents,
     loadingGlossary,
     submitQuiz,
     submittingQuiz,
@@ -49,12 +49,12 @@ export default function Education() {
     term.definition.toLowerCase().includes(glossarySearch.toLowerCase())
   );
 
-  const formatCurrency = (value: number) => 
+  const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
   const handleQuizSubmit = () => {
     if (!selectedContent?.quiz_data) return;
-    
+
     let score = 0;
     const quizData = selectedContent.quiz_data as QuizQuestion[];
     quizData.forEach((q, index) => {
@@ -76,8 +76,8 @@ export default function Education() {
   };
 
   const renderContentCard = (content: EducationContent) => (
-    <Card 
-      key={content.id} 
+    <Card
+      key={content.id}
       className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02]"
       onClick={() => {
         setSelectedContent(content);
@@ -236,7 +236,7 @@ export default function Education() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="p-4 rounded-lg bg-primary/10 space-y-2">
                     <div className="flex justify-between">
                       <span>Total investido:</span>
@@ -256,8 +256,8 @@ export default function Education() {
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={compoundResult.monthlyData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" tickFormatter={(v) => `${v/12}a`} />
-                        <YAxis tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                        <XAxis dataKey="month" tickFormatter={(v) => `${v / 12}a`} />
+                        <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                         <Tooltip formatter={(v: number) => formatCurrency(v)} />
                         <Line type="monotone" dataKey="invested" stroke="hsl(var(--muted-foreground))" name="Investido" />
                         <Line type="monotone" dataKey="total" stroke="hsl(var(--primary))" name="Total" />
@@ -304,7 +304,7 @@ export default function Education() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="p-4 rounded-lg bg-primary/10 space-y-2">
                     <div className="flex justify-between text-lg">
                       <span>Parcela mensal:</span>
@@ -367,7 +367,7 @@ export default function Education() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="p-6 rounded-lg bg-gradient-to-r from-primary/20 to-primary/5 text-center">
                     <p className="text-muted-foreground mb-2">Você precisa investir mensalmente:</p>
                     <p className="text-4xl font-bold text-primary">{formatCurrency(goalResult)}</p>
@@ -423,9 +423,9 @@ export default function Education() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm text-muted-foreground">Relacionados:</span>
                               {term.related_terms.map((related, i) => (
-                                <Badge 
-                                  key={i} 
-                                  variant="secondary" 
+                                <Badge
+                                  key={i}
+                                  variant="secondary"
                                   className="cursor-pointer"
                                   onClick={() => setGlossarySearch(related)}
                                 >
@@ -455,14 +455,14 @@ export default function Education() {
               <DialogTitle>{selectedContent?.title}</DialogTitle>
               <DialogDescription>{selectedContent?.description}</DialogDescription>
             </DialogHeader>
-            
+
             <ScrollArea className="max-h-[60vh] pr-4">
               {selectedContent?.type === 'article' && (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   <p className="whitespace-pre-wrap">{selectedContent.content}</p>
                 </div>
               )}
-              
+
               {selectedContent?.type === 'video' && (
                 <div className="text-center py-8">
                   <Video className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -476,7 +476,7 @@ export default function Education() {
                   )}
                 </div>
               )}
-              
+
               {selectedContent?.type === 'quiz' && selectedContent.quiz_data && (
                 <div className="space-y-6">
                   {(selectedContent.quiz_data as QuizQuestion[]).map((question, qIndex) => (
@@ -487,15 +487,14 @@ export default function Education() {
                           const isSelected = quizAnswers[qIndex] === oIndex;
                           const isCorrect = oIndex === question.correct;
                           const showResult = quizSubmitted;
-                          
+
                           return (
                             <Button
                               key={oIndex}
                               variant={isSelected ? "default" : "outline"}
-                              className={`w-full justify-start ${
-                                showResult && isCorrect ? "bg-green-500 hover:bg-green-600" :
-                                showResult && isSelected && !isCorrect ? "bg-red-500 hover:bg-red-600" : ""
-                              }`}
+                              className={`w-full justify-start ${showResult && isCorrect ? "bg-green-500 hover:bg-green-600" :
+                                  showResult && isSelected && !isCorrect ? "bg-red-500 hover:bg-red-600" : ""
+                                }`}
                               onClick={() => !quizSubmitted && setQuizAnswers({ ...quizAnswers, [qIndex]: oIndex })}
                               disabled={quizSubmitted}
                             >
@@ -506,10 +505,10 @@ export default function Education() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {!quizSubmitted ? (
-                    <Button 
-                      onClick={handleQuizSubmit} 
+                    <Button
+                      onClick={handleQuizSubmit}
                       disabled={Object.keys(quizAnswers).length !== (selectedContent.quiz_data as QuizQuestion[]).length || submittingQuiz}
                       className="w-full"
                     >

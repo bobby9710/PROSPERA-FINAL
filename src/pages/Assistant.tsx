@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { 
-  useConversations, 
-  useConversationMessages, 
-  useCreateConversation, 
+import {
+  useConversations,
+  useConversationMessages,
+  useCreateConversation,
   useDeleteConversation,
   useSaveMessage,
-  useStreamChat 
+  useStreamChat
 } from "@/hooks/useChat";
 import { useFinancialContext } from "@/hooks/useFinancialContext";
 import {
@@ -54,7 +54,7 @@ export default function Assistant() {
   const { data: conversations = [], isLoading: conversationsLoading } = useConversations();
   const { data: dbMessages = [] } = useConversationMessages(activeConversationId);
   const { data: financialContext } = useFinancialContext();
-  
+
   const createConversation = useCreateConversation();
   const deleteConversation = useDeleteConversation();
   const saveMessage = useSaveMessage();
@@ -145,7 +145,7 @@ export default function Assistant() {
       financialContext,
       onDelta: (text) => {
         fullResponse += text;
-        setLocalMessages(prev => 
+        setLocalMessages(prev =>
           prev.map(m => m.id === assistantId ? { ...m, content: fullResponse } : m)
         );
       },
@@ -160,9 +160,9 @@ export default function Assistant() {
         }
       },
       onError: () => {
-        setLocalMessages(prev => 
-          prev.map(m => m.id === assistantId 
-            ? { ...m, content: "Desculpe, ocorreu um erro. Por favor, tente novamente." } 
+        setLocalMessages(prev =>
+          prev.map(m => m.id === assistantId
+            ? { ...m, content: "Desculpe, ocorreu um erro. Por favor, tente novamente." }
             : m
           )
         );
@@ -179,15 +179,15 @@ export default function Assistant() {
       <div className="flex h-[calc(100vh-12rem)] sm:h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)] gap-4">
         {/* Sidebar - Conversations */}
         <div className="hidden md:flex flex-col w-64 bg-card rounded-xl border border-border/50 p-4">
-          <Button 
-            onClick={handleNewConversation} 
+          <Button
+            onClick={handleNewConversation}
             className="w-full mb-4 gap-2"
             disabled={createConversation.isPending}
           >
             <Plus className="w-4 h-4" />
             Nova Conversa
           </Button>
-          
+
           <ScrollArea className="flex-1">
             <div className="space-y-2">
               {conversations.map((conv) => (
@@ -238,9 +238,9 @@ export default function Assistant() {
                 Seu consultor financeiro pessoal
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="ml-auto md:hidden"
               onClick={handleNewConversation}
             >
@@ -329,8 +329,8 @@ export default function Assistant() {
               disabled={isStreaming}
               className="flex-1"
             />
-            <Button 
-              onClick={handleSend} 
+            <Button
+              onClick={handleSend}
               className="btn-gradient px-4"
               disabled={isStreaming || !inputValue.trim()}
             >

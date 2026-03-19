@@ -30,6 +30,14 @@ export default {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+        tertiary: {
+          DEFAULT: "hsl(var(--tertiary))",
+          foreground: "hsl(var(--tertiary-foreground))",
+        },
+        neutral: {
+          DEFAULT: "hsl(var(--neutral))",
+          foreground: "hsl(var(--neutral-foreground))",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
@@ -68,6 +76,9 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "background-light": "#f6f5f8",
+        "background-dark": "#07090f",
+        "card-dark": "#11141d",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -106,6 +117,10 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.7" },
         },
+        growUp: {
+          '0%': { height: '0%' },
+          '100%': { height: 'var(--target-height)' }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -114,6 +129,7 @@ export default {
         "slide-up": "slide-up 0.4s ease-out forwards",
         "scale-in": "scale-in 0.2s ease-out forwards",
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
+        growUp: 'growUp 1s ease-out forwards'
       },
     },
   },

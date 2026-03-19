@@ -10,7 +10,7 @@ import { User, Wallet, Home, Users, PiggyBank, TrendingUp, CreditCard, AlertCirc
 
 export default function FinancialProfile() {
   const { profile, loadingProfile, suggestions, saveProfile, savingProfile } = useFinancialProfile();
-  
+
   const [formData, setFormData] = useState({
     monthly_income: 0,
     fixed_expenses: 0,
@@ -103,7 +103,7 @@ export default function FinancialProfile() {
                         placeholder="Ex: 5000.00"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Home className="h-4 w-4" />
@@ -117,7 +117,7 @@ export default function FinancialProfile() {
                         placeholder="Ex: 3000.00"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
@@ -131,7 +131,7 @@ export default function FinancialProfile() {
                         placeholder="Ex: 2"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <PiggyBank className="h-4 w-4" />
@@ -145,7 +145,7 @@ export default function FinancialProfile() {
                         placeholder="Ex: 15000.00"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4" />
@@ -159,7 +159,7 @@ export default function FinancialProfile() {
                         placeholder="Ex: 50000.00"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function FinancialProfile() {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Fundo de Emergência</CardTitle>
@@ -216,7 +216,7 @@ export default function FinancialProfile() {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Renda Livre</CardTitle>
@@ -230,7 +230,7 @@ export default function FinancialProfile() {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Relação Dívida/Renda</CardTitle>
@@ -275,11 +275,11 @@ export default function FinancialProfile() {
                     <span>Agressivo</span>
                   </div>
                   <div className="h-2 rounded-full bg-gradient-to-r from-blue-500 via-yellow-500 to-red-500" />
-                  <div 
+                  <div
                     className="absolute -bottom-1 w-4 h-4 bg-background border-2 border-primary rounded-full transform -translate-x-1/2"
-                    style={{ 
-                      left: currentProfile === 'conservative' ? '16.67%' : 
-                            currentProfile === 'moderate' ? '50%' : '83.33%' 
+                    style={{
+                      left: currentProfile === 'conservative' ? '16.67%' :
+                        currentProfile === 'moderate' ? '50%' : '83.33%'
                     }}
                   />
                 </div>

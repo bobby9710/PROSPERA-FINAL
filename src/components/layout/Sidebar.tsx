@@ -94,8 +94,8 @@ export function Sidebar() {
               to={item.href}
               className={cn(
                 "group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300",
-                isActive 
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" 
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                   : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
               )}
               style={{ animationDelay: `${idx * 40}ms` }}
@@ -153,8 +153,8 @@ export function Sidebar() {
               </Link>
             );
           })}
-          
-          <button 
+
+          <button
             onClick={handleSignOut}
             className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-300 text-destructive/80 hover:bg-destructive/10 hover:text-destructive group"
           >

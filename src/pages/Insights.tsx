@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { 
-  BarChart3, 
-  TrendingUp, 
-  TrendingDown, 
-  Lightbulb, 
+import {
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  Lightbulb,
   RefreshCw,
   Calendar,
   Target,
@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 export default function Insights() {
   const [activeTab, setActiveTab] = useState("monthly");
-  
+
   const { data: insights = [], isLoading: insightsLoading } = useInsights();
   const { data: transactions = [] } = useTransactions();
   const { data: financialContext } = useFinancialContext();

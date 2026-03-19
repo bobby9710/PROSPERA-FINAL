@@ -40,18 +40,18 @@ import {
 export default function Simulator() {
   const { data: financialContext } = useFinancialContext();
   const { data: goals = [] } = useGoals();
-  
+
   const [activeTab, setActiveTab] = useState("savings");
-  
+
   // Savings simulator state
   const [monthlySavings, setMonthlySavings] = useState(500);
   const [savingsMonths, setSavingsMonths] = useState(12);
   const [annualReturn, setAnnualReturn] = useState(10);
-  
+
   // Goal simulator state
   const [targetAmount, setTargetAmount] = useState(10000);
   const [monthlyContribution, setMonthlyContribution] = useState(500);
-  
+
   // When will I reach goal state
   const [selectedGoalId, setSelectedGoalId] = useState<string>("");
   const [extraContribution, setExtraContribution] = useState(0);
@@ -62,7 +62,7 @@ export default function Simulator() {
     const data = [];
     let balance = 0;
     let totalInvested = 0;
-    
+
     for (let month = 0; month <= savingsMonths; month++) {
       data.push({
         month,
@@ -71,27 +71,27 @@ export default function Simulator() {
         invested: totalInvested,
         earnings: Math.round(balance - totalInvested),
       });
-      
+
       balance = balance * (1 + monthlyRate) + monthlySavings;
       totalInvested += monthlySavings;
     }
-    
+
     return data;
   }, [monthlySavings, savingsMonths, annualReturn]);
 
   // Calculate how many months to reach target
   const monthsToTarget = useMemo(() => {
     if (monthlyContribution <= 0) return Infinity;
-    
+
     const monthlyRate = annualReturn / 100 / 12;
     let balance = 0;
     let months = 0;
-    
+
     while (balance < targetAmount && months < 600) {
       balance = balance * (1 + monthlyRate) + monthlyContribution;
       months++;
     }
-    
+
     return months;
   }, [targetAmount, monthlyContribution, annualReturn]);
 
@@ -99,23 +99,23 @@ export default function Simulator() {
   const selectedGoal = goals.find(g => g.id === selectedGoalId);
   const goalProjection = useMemo(() => {
     if (!selectedGoal) return null;
-    
+
     const remaining = selectedGoal.target_amount - selectedGoal.current_amount;
-    const baseMonthly = financialContext?.monthlyIncome 
-      ? (financialContext.monthlyIncome - financialContext.monthlyExpenses) * 0.2 
+    const baseMonthly = financialContext?.monthlyIncome
+      ? (financialContext.monthlyIncome - financialContext.monthlyExpenses) * 0.2
       : 500;
     const totalMonthly = baseMonthly + extraContribution;
-    
+
     if (totalMonthly <= 0) return null;
-    
+
     const monthsNeeded = Math.ceil(remaining / totalMonthly);
     const targetDate = new Date();
     targetDate.setMonth(targetDate.getMonth() + monthsNeeded);
-    
+
     // Generate projection data
     const data = [];
     let current = selectedGoal.current_amount;
-    
+
     for (let month = 0; month <= Math.min(monthsNeeded, 24); month++) {
       data.push({
         month,
@@ -125,7 +125,7 @@ export default function Simulator() {
       });
       current += totalMonthly;
     }
-    
+
     return {
       monthsNeeded,
       targetDate,
@@ -316,7 +316,7 @@ export default function Simulator() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="label" className="text-xs" />
-                      <YAxis 
+                      <YAxis
                         className="text-xs"
                         tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`}
                       />
@@ -506,7 +506,7 @@ export default function Simulator() {
                                 <LineChart data={goalProjection.data}>
                                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                                   <XAxis dataKey="label" className="text-xs" />
-                                  <YAxis 
+                                  <YAxis
                                     className="text-xs"
                                     tickFormatter={(v) => `R$ ${(v / 1000).toFixed(0)}k`}
                                   />

@@ -11,11 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAutomations, TRIGGER_TYPES, ACTION_TYPES } from "@/hooks/useAutomations";
 import { useCategories } from "@/hooks/useCategories";
 import { useGoals } from "@/hooks/useGoals";
-import { 
-  Zap, 
-  Plus, 
-  Trash2, 
-  ArrowRight, 
+import {
+  Zap,
+  Plus,
+  Trash2,
+  ArrowRight,
   Crown,
   Settings,
   Bell,
@@ -336,7 +336,7 @@ export default function Automations() {
                             <span>{trigger?.label}</span>
                             {rule.trigger_value && (
                               <Badge variant="outline" className="text-xs">
-                                {rule.trigger_type === "category_equals" 
+                                {rule.trigger_type === "category_equals"
                                   ? categories.find(c => c.id === rule.trigger_value)?.name
                                   : rule.trigger_value}
                               </Badge>
@@ -348,11 +348,11 @@ export default function Automations() {
                             </span>
                             {rule.action_value && (
                               <Badge variant="outline" className="text-xs">
-                                {rule.action_type === "change_category" 
+                                {rule.action_type === "change_category"
                                   ? `${category?.icon} ${category?.name}`
                                   : rule.action_type === "add_to_goal"
-                                  ? goals.find(g => g.id === rule.action_value)?.name
-                                  : rule.action_value}
+                                    ? goals.find(g => g.id === rule.action_value)?.name
+                                    : rule.action_value}
                               </Badge>
                             )}
                           </div>

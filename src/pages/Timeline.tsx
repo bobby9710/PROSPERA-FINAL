@@ -27,7 +27,7 @@ type ViewMode = "day" | "week" | "month" | "year";
 export default function Timeline() {
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
-  
+
   const { data: transactions = [], isLoading } = useTransactions();
 
   // Get date range based on view mode
@@ -54,7 +54,7 @@ export default function Timeline() {
   // Group transactions by day
   const groupedTransactions = useMemo(() => {
     const groups: Record<string, typeof transactions> = {};
-    
+
     filteredTransactions.forEach(t => {
       const dateKey = t.date;
       if (!groups[dateKey]) {
@@ -62,8 +62,8 @@ export default function Timeline() {
       }
       groups[dateKey].push(t);
     });
-    
-    return Object.entries(groups).sort((a, b) => 
+
+    return Object.entries(groups).sort((a, b) =>
       parseISOToLocal(b[0]).getTime() - parseISOToLocal(a[0]).getTime()
     );
   }, [filteredTransactions]);
@@ -237,7 +237,7 @@ export default function Timeline() {
                   <div key={date} className="relative">
                     {/* Timeline Line */}
                     <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-border" />
-                    
+
                     {/* Day Header */}
                     <div className="flex items-center gap-4 mb-3">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center z-10">
@@ -279,8 +279,8 @@ export default function Timeline() {
                                 style={(transaction as any).category?.icon ? { backgroundColor: (transaction as any).category.color } : {}}
                               >
                                 {(transaction as any).category?.icon?.endsWith('.svg') ? (
-                                  <img 
-                                    src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${(transaction as any).category.icon}`} 
+                                  <img
+                                    src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${(transaction as any).category.icon}`}
                                     alt=""
                                     className="w-full h-full object-contain"
                                   />

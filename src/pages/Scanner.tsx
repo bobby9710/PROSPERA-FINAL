@@ -62,7 +62,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 
 function suggestCategory(establishment: string, categories: Array<{ id: string; name: string; type: string }>): string | null {
   const lowerEstablishment = establishment.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  
+
   for (const [categoryName, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
     for (const keyword of keywords) {
       const normalizedKeyword = keyword.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -84,7 +84,7 @@ export default function Scanner() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Form state for editing extracted data
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
@@ -92,10 +92,10 @@ export default function Scanner() {
   const [categoryId, setCategoryId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [creditCardId, setCreditCardId] = useState("");
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  
+
   const { data: categories = [] } = useCategories();
   const { data: creditCards = [] } = useCreditCards();
   const createTransaction = useCreateTransaction();
@@ -140,7 +140,7 @@ export default function Scanner() {
         if (data.data.date) setDate(data.data.date);
         if (data.data.establishment) {
           setDescription(data.data.establishment);
-          
+
           // Auto-suggest category based on establishment name
           const suggestedCategoryId = suggestCategory(data.data.establishment, categories);
           if (suggestedCategoryId) {
@@ -148,9 +148,9 @@ export default function Scanner() {
           }
         }
         if (data.data.paymentMethod) {
-          const method = data.data.paymentMethod === "credit_card" ? "credit" : 
-                        data.data.paymentMethod === "debit_card" ? "debit" : 
-                        data.data.paymentMethod;
+          const method = data.data.paymentMethod === "credit_card" ? "credit" :
+            data.data.paymentMethod === "debit_card" ? "debit" :
+              data.data.paymentMethod;
           setPaymentMethod(method);
         }
 

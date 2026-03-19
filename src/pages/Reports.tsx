@@ -8,11 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useReports } from "@/hooks/useReports";
 import { useCategories } from "@/hooks/useCategories";
-import { 
-  FileText, 
-  Download, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  FileText,
+  Download,
+  TrendingUp,
+  TrendingDown,
   DollarSign,
   BarChart3,
   PieChart,
@@ -33,17 +33,17 @@ const PRESET_PERIODS = [
 ];
 
 export default function Reports() {
-  const { 
-    reportData, 
-    isLoading, 
-    dateRange, 
-    setDateRange, 
-    categoryFilter, 
+  const {
+    reportData,
+    isLoading,
+    dateRange,
+    setDateRange,
+    categoryFilter,
     setCategoryFilter,
     typeFilter,
     setTypeFilter,
-    exportToPDF, 
-    exportToExcel 
+    exportToPDF,
+    exportToExcel
   } = useReports();
   const { data: categories = [] } = useCategories();
 
@@ -106,7 +106,7 @@ export default function Reports() {
                   ))}
                 </div>
               </div>
-              
+
               {/* Date Range and Filters */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="min-w-0">
@@ -287,32 +287,32 @@ export default function Reports() {
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={reportData?.timeline || []}>
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="date" 
+                          <XAxis
+                            dataKey="date"
                             tickFormatter={(v) => format(parseISO(v), "dd/MM")}
                           />
                           <YAxis tickFormatter={(v) => `R$ ${v}`} />
-                          <Tooltip 
+                          <Tooltip
                             formatter={(value: number) => formatCurrency(value)}
                             labelFormatter={(label) => format(parseISO(label), "dd/MM/yyyy")}
                           />
                           <Legend />
-                          <Area 
-                            type="monotone" 
-                            dataKey="income" 
-                            name="Receitas" 
+                          <Area
+                            type="monotone"
+                            dataKey="income"
+                            name="Receitas"
                             stackId="1"
-                            stroke="#22c55e" 
-                            fill="#22c55e" 
+                            stroke="#22c55e"
+                            fill="#22c55e"
                             fillOpacity={0.3}
                           />
-                          <Area 
-                            type="monotone" 
-                            dataKey="expense" 
-                            name="Despesas" 
+                          <Area
+                            type="monotone"
+                            dataKey="expense"
+                            name="Despesas"
                             stackId="2"
-                            stroke="#ef4444" 
-                            fill="#ef4444" 
+                            stroke="#ef4444"
+                            fill="#ef4444"
                             fillOpacity={0.3}
                           />
                         </AreaChart>

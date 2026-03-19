@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { 
-  Building2, 
-  Link, 
-  Link2Off, 
-  RefreshCw, 
-  Check, 
-  X, 
+import {
+  Building2,
+  Link,
+  Link2Off,
+  RefreshCw,
+  Check,
+  X,
   Plus,
   ArrowRight,
   Clock,
@@ -37,14 +37,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { 
-  useBankConnections, 
-  useImportedTransactions, 
-  useConnectBank, 
+import {
+  useBankConnections,
+  useImportedTransactions,
+  useConnectBank,
   useDisconnectBank,
   useSyncBank,
   useMatchTransaction,
-  brazilianBanks 
+  brazilianBanks
 } from "@/hooks/useOpenFinance";
 import { useTransactions } from "@/hooks/useTransactions";
 import { format } from "date-fns";
@@ -59,7 +59,7 @@ export default function OpenFinance() {
   const { data: connections = [], isLoading: connectionsLoading } = useBankConnections();
   const { data: importedTransactions = [] } = useImportedTransactions();
   const { data: userTransactions = [] } = useTransactions();
-  
+
   const connectBank = useConnectBank();
   const disconnectBank = useDisconnectBank();
   const syncBank = useSyncBank();
@@ -122,7 +122,7 @@ export default function OpenFinance() {
               <p className="text-muted-foreground">Conecte seus bancos e importe transações automaticamente</p>
             </div>
           </div>
-          
+
           <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -202,7 +202,7 @@ export default function OpenFinance() {
                         <div className="min-w-0 flex-1">
                           <p className="font-medium truncate">{conn.bank_name}</p>
                           <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                            Última sync: {conn.last_sync_at 
+                            Última sync: {conn.last_sync_at
                               ? format(new Date(conn.last_sync_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
                               : "Nunca"
                             }

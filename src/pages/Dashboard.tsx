@@ -35,10 +35,10 @@ export default function Dashboard() {
   const { data: categoryStats, isLoading: categoriesLoading } = useCategoryStats(selectedMonth, selectedYear);
   const { data: activeGoals, isLoading: goalsLoading } = useActiveGoals(3);
   const { data: chartData, isLoading: chartLoading } = useMonthlyChartData(6);
-  
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 
-                    user?.email?.split('@')[0] || 
-                    'Usuário';
+
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ||
+    user?.email?.split('@')[0] ||
+    'Usuário';
 
   const isLoading = statsLoading || transactionsLoading || categoriesLoading || goalsLoading || chartLoading;
 
@@ -86,8 +86,8 @@ export default function Dashboard() {
   }));
 
   // Transform category stats
-  const formattedCategories = (categoryStats || []).length > 0 
-    ? categoryStats 
+  const formattedCategories = (categoryStats || []).length > 0
+    ? categoryStats
     : [{ name: "Sem gastos", value: 0, color: "hsl(220, 9%, 46%)" }];
 
   return (
@@ -108,7 +108,7 @@ export default function Dashboard() {
           <Button variant="ghost" size="icon" onClick={goToPreviousMonth} className="h-9 w-9 rounded-xl">
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          
+
           <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" className="h-9 font-bold px-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors">
@@ -156,7 +156,7 @@ export default function Dashboard() {
               </div>
             </PopoverContent>
           </Popover>
-          
+
           <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-9 w-9 rounded-xl">
             <ChevronRight className="w-5 h-5" />
           </Button>
@@ -172,9 +172,9 @@ export default function Dashboard() {
           {/* Balance and Stats Grid */}
           <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-4 mb-6">
             <div className="lg:col-span-2">
-              <BalanceCard 
-                balance={stats?.balance || 0} 
-                percentChange={0} 
+              <BalanceCard
+                balance={stats?.balance || 0}
+                percentChange={0}
               />
             </div>
             <StatCard

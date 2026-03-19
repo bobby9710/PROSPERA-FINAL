@@ -366,11 +366,10 @@ export default function Settings() {
                         setTheme(t.value);
                         updateSettings.mutate({ theme: t.value });
                       }}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        theme === t.value
+                      className={`p-4 rounded-lg border-2 transition-all ${theme === t.value
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
-                      }`}
+                        }`}
                     >
                       <div className="text-3xl mb-2">{t.icon}</div>
                       <div className="font-medium">{t.label}</div>

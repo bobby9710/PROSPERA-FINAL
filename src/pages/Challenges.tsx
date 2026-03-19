@@ -324,7 +324,7 @@ export default function Challenges() {
                           <div className="flex justify-between text-sm mb-1">
                             <span>Progresso</span>
                             <span>
-                              {challenge.target_value 
+                              {challenge.target_value
                                 ? `R$ ${challenge.current_progress.toFixed(0)} / R$ ${challenge.target_value}`
                                 : `${progress.toFixed(0)}%`}
                             </span>

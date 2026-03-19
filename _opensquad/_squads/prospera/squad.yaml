@@ -1,0 +1,55 @@
+name: "Prospera Evolution Squad"
+description: "Squad de alta performance para a evolução geral, estabilidade e inovação da plataforma Prospera, com foco total no design Stitch e excelência técnica."
+performanceMode: "Alta Performance"
+companyProfile: "_opensquad/_memory/company.md"
+
+agents:
+  - id: pm
+    name: "Patrícia Produto"
+    role: "Product Manager & Estrategista"
+    initial: "P"
+    prompt: "_opensquad/core/prompts/patricia-produto.prompt.md"
+    knowledgeDomains: ["Fintech Agile Frameworks", "Personal Finance Metrics", "Task Prioritization"]
+    workflow: "strategist"
+
+  - id: pd
+    name: "Davi Designer"
+    role: "Product Designer UX/UI"
+    initial: "D"
+    prompt: "_opensquad/core/prompts/davi-designer.prompt.md"
+    knowledgeDomains: ["Responsive Dashboards", "Dark/Light Mode Systems", "Stitch Design Integration"]
+    workflow: "image-design"
+
+  - id: fs
+    name: "Sandro Software"
+    role: "Full Stack Developer"
+    initial: "S"
+    prompt: "_opensquad/core/prompts/sandro-software.prompt.md"
+    knowledgeDomains: ["React Vite Tailwind", "API Integration", "State Management (Zustand/Query)"]
+    workflow: "technical-writing"
+
+  - id: qa
+    name: "Quitéria Qualidade"
+    role: "QA & DevOps Engineer"
+    initial: "Q"
+    prompt: "_opensquad/core/prompts/quiteria-qualidade.prompt.md"
+    knowledgeDomains: ["Vitest/Playwright Automation", "Visual Regression Tests", "CI/CD Vercel"]
+    workflow: "review"
+
+pipeline:
+  stages:
+    - name: "Briefing & Priorização"
+      agent: "pm"
+      task: "Transformar a visão do usuário em stories acionáveis e priorizadas."
+
+    - name: "Refinamento de Design"
+      agent: "pd"
+      task: "Validar e adaptar o design do Stitch para as funcionalidades solicitadas."
+
+    - name: "Implementação de Código"
+      agent: "fs"
+      task: "Desenvolver frontend e backend seguindo o padrão Stitch e stack moderna."
+
+    - name: "Validação & Deploy"
+      agent: "qa"
+      task: "Realizar testes automatizados, visuais e garantir o deploy estável."

@@ -16,17 +16,23 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 13%;
 
-    --primary: 258 90% 66%;
+    --primary: 258 88% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 330 86% 60%;
+    --secondary: 258 30% 56%;
     --secondary-foreground: 0 0% 100%;
+
+    --tertiary: 36 100% 34%;
+    --tertiary-foreground: 0 0% 100%;
+
+    --neutral: 258 6% 48%;
+    --neutral-foreground: 0 0% 100%;
 
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
     --accent: 258 90% 95%;
-    --accent-foreground: 258 90% 40%;
+    --accent-foreground: 258 88% 40%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -39,24 +45,24 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 258 90% 66%;
+    --ring: 258 88% 65%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 9% 46%;
-    --sidebar-primary: 258 90% 66%;
+    --sidebar-primary: 258 88% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 258 90% 95%;
-    --sidebar-accent-foreground: 258 90% 40%;
+    --sidebar-accent-foreground: 258 88% 40%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 258 90% 66%;
+    --sidebar-ring: 258 88% 65%;
 
-    /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(280 90% 60%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(330 86% 60%) 0%, hsl(350 86% 55%) 100%);
+    /* Custom gradients updated */
+    --gradient-primary: linear-gradient(135deg, hsl(258 88% 65%) 0%, hsl(280 88% 60%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(258 30% 56%) 0%, hsl(258 30% 50%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(140 70% 45%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(258 90% 58%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(258 88% 65%) 0%, hsl(258 88% 58%) 100%);
     --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
 
     /* Shadows */
@@ -64,7 +70,7 @@
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    --shadow-primary: 0 10px 40px -10px hsl(258 90% 66% / 0.4);
+    --shadow-primary: 0 10px 40px -10px hsl(258 88% 65% / 0.4);
     --shadow-card: 0 4px 20px -2px rgb(0 0 0 / 0.08);
   }
 
@@ -78,17 +84,23 @@
     --popover: 220 13% 14%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 258 90% 66%;
+    --primary: 258 88% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 330 86% 60%;
+    --secondary: 258 30% 56%;
     --secondary-foreground: 0 0% 100%;
+
+    --tertiary: 36 100% 34%;
+    --tertiary-foreground: 0 0% 100%;
+
+    --neutral: 258 6% 48%;
+    --neutral-foreground: 0 0% 100%;
 
     --muted: 220 13% 20%;
     --muted-foreground: 220 9% 65%;
 
     --accent: 258 40% 20%;
-    --accent-foreground: 258 90% 80%;
+    --accent-foreground: 258 88% 80%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -350,4 +362,40 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/30;
+}
+
+/* Prospera Custom Utilities - Design System v2 */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glow-violet {
+  box-shadow: 0 0 20px rgba(137, 90, 246, 0.3);
+}
+
+.gradient-button {
+  background: linear-gradient(135deg, #895af6 0%, #4c1d95 100%);
+  transition: all 0.3s ease;
+}
+
+.gradient-button:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 8px 30px rgba(137, 90, 246, 0.4);
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #895af6 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
