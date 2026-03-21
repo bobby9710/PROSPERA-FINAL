@@ -87,25 +87,35 @@ export function useCategoryStats(month?: number, year?: number) {
       if (error) throw error;
 
       // Group by category
-      const categoryMap = new Map<string, { name: string; value: number; color: string }>();
+      const categoryMap = new Map<string, { name: string; value: number; color: string; icon: string; transactionsCount: number }>();
       
       data.forEach((t: any) => {
         const categoryName = t.category?.name || "Sem categoria";
         const categoryColor = t.category?.color || "#6B7280";
+        const categoryIcon = t.category?.icon || "category";
         const existing = categoryMap.get(categoryName);
         
         if (existing) {
           existing.value += Number(t.amount);
+          existing.transactionsCount += 1;
         } else {
           categoryMap.set(categoryName, {
             name: categoryName,
             value: Number(t.amount),
             color: categoryColor,
+            icon: categoryIcon,
+            transactionsCount: 1,
           });
         }
       });
 
+      const totalValue = Array.from(categoryMap.values()).reduce((acc, curr) => acc + curr.value, 0);
+
       return Array.from(categoryMap.values())
+        .map(cat => ({
+          ...cat,
+          percentage: totalValue > 0 ? (cat.value / totalValue) * 100 : 0
+        }))
         .sort((a, b) => b.value - a.value)
         .slice(0, 5);
     },

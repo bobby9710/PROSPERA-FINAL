@@ -65,103 +65,163 @@ export function Sidebar() {
     });
   };
 
+  const navGroups = [
+    {
+      label: "Main",
+      items: [
+        { icon: "dashboard", label: "Dashboard", href: "/" },
+        { icon: "smart_toy", label: "Assistente IA", href: "/assistant", highlight: true },
+      ]
+    },
+    {
+      label: "Operações",
+      items: [
+        { icon: "swap_horiz", label: "Movimentações", href: "/transactions" },
+        { icon: "credit_card", label: "Cartões", href: "/cards" },
+        { icon: "tour", label: "Metas", href: "/goals" },
+        { icon: "document_scanner", label: "Scanner", href: "/scanner", premium: true },
+        { icon: "account_tree", label: "Open Finance", href: "/open-finance", premium: true },
+      ]
+    },
+    {
+      label: "Análise",
+      items: [
+        { icon: "timeline", label: "Linha do Tempo", href: "/timeline" },
+        { icon: "lightbulb", label: "Insights", href: "/insights", premium: true },
+        { icon: "analytics", label: "Relatórios", href: "/reports", premium: true },
+      ]
+    },
+    {
+      label: "Crescimento",
+      items: [
+        { icon: "military_tech", label: "Desafios", href: "/challenges" },
+        { icon: "calculate", label: "Simulador", href: "/simulator" },
+        { icon: "robot_2", label: "Automações", href: "/automations", premium: true },
+        { icon: "school", label: "Educação", href: "/education", premium: true },
+      ]
+    },
+    {
+      label: "Gerenciamento",
+      items: [
+        { icon: "person_pin_circle", label: "Perfil Financeiro", href: "/financial-profile" },
+        { icon: "category", label: "Categorias", href: "/categories" },
+      ]
+    }
+  ];
+
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-card/60 backdrop-blur-3xl border-r border-border/40 z-50 flex flex-col transition-all duration-300">
-      {/* Logo */}
-      <div className="p-8 pb-6 border-transparent">
-        <Link to="/" className="flex items-center gap-4 transition-transform hover:scale-[1.02]">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-secondary flex items-center justify-center shadow-xl shadow-primary/25 border border-white/20 dark:border-white/10">
-            <Sparkles className="w-6 h-6 text-primary-foreground" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="font-extrabold text-2xl leading-tight tracking-tight text-foreground -mb-1">
-              Pros<span className="text-primary">pera</span>
-            </h1>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-80 pl-0.5">
-              Organize suas contas
-            </p>
-          </div>
+    <aside className="w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-card-dark z-20 shrink-0 fixed left-0 top-0 h-screen">
+      <div className="p-4 flex items-center gap-3 shrink-0">
+        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white glow-primary">
+          <span className="material-symbols-outlined text-lg font-bold">account_balance_wallet</span>
+        </div>
+        <Link to="/">
+          <h1 className="text-base font-bold tracking-tight text-primary leading-tight">Prospera</h1>
+          <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold">Finanças Inteligentes</p>
         </Link>
       </div>
 
-      {/* Main Navigation */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-1.5 scrollbar-hide custom-scrollbar">
-        {navItems.map((item, idx) => {
-          const isActive = location.pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-              )}
-              style={{ animationDelay: `${idx * 40}ms` }}
-            >
-              <item.icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-primary-foreground" : "text-primary/70 group-hover:text-primary")} />
-              <span className="font-semibold text-[15px]">{item.label}</span>
-              {item.premium && (
-                <span className={cn(
-                  "ml-auto text-[9px] px-2 py-0.5 rounded-lg font-bold uppercase tracking-wider",
-                  isActive ? "bg-white/20 text-white" : "bg-secondary/10 text-secondary"
-                )}>
-                  PRO
-                </span>
-              )}
-              {isActive && (
-                <div className="absolute left-[-1rem] w-1.5 h-8 bg-primary rounded-r-full" />
-              )}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 px-3 space-y-4 overflow-y-auto sidebar-scroll pb-4">
+        {navGroups.map((group, gIdx) => (
+          <div key={gIdx}>
+            {group.label !== "Main" && (
+              <div className="px-3 mb-1 text-[8px] font-bold uppercase text-slate-400 tracking-wider">
+                {group.label}
+              </div>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item, iIdx) => {
+                const isActive = location.pathname === item.href;
+                
+                if (item.premium) {
+                  return (
+                    <Link
+                      key={iIdx}
+                      to={item.href}
+                      className={cn(
+                        "flex items-center justify-between px-3 py-1 rounded-lg text-slate-500 transition-colors group",
+                        isActive ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-lg">{item.icon}</span>
+                        <span className="text-[12px]">{item.label}</span>
+                      </div>
+                      <span className="text-[8px] bg-primary/20 text-primary px-1 py-0.5 rounded font-bold">PRO</span>
+                    </Link>
+                  );
+                }
+
+                if (isActive && group.label === "Main") {
+                  return (
+                    <Link
+                      key={iIdx}
+                      to={item.href}
+                      className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-semibold transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-lg">{item.icon}</span>
+                      <span className="text-[12px]">{item.label}</span>
+                    </Link>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={iIdx}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-1.5 rounded-lg text-slate-500 transition-colors",
+                      isActive ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                    )}
+                  >
+                    <span className={cn(
+                      "material-symbols-outlined text-lg",
+                      item.highlight ? "text-primary" : ""
+                    )}>{item.icon}</span>
+                    <span className={cn(
+                      "text-[12px]",
+                      item.highlight ? "font-medium" : ""
+                    )}>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Profile & Bottom Section */}
-      <div className="p-6 mt-auto border-t border-border/40 bg-accent/20">
-        <div className="flex items-center gap-3 mb-6 p-2 rounded-2xl">
-          <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold">
-            {user?.email?.[0].toUpperCase() || "U"}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-bold truncate text-foreground">{user?.email?.split('@')[0]}</span>
-            <span className="text-xs text-muted-foreground truncate opacity-70">Grátis</span>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          {bottomNavItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-300 text-muted-foreground hover:bg-accent hover:text-foreground",
-                  isActive && "bg-accent text-foreground",
-                  item.premium && "bg-gradient-to-r from-yellow-500/5 to-orange-500/5 border border-yellow-500/10"
-                )}
-              >
-                <item.icon className={cn("w-5 h-5", item.premium ? "text-yellow-500" : "text-primary/60")} />
-                <span className="font-semibold text-sm">{item.label}</span>
-                {item.premium && (
-                  <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-lg bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold">
-                    PRO
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-300 text-destructive/80 hover:bg-destructive/10 hover:text-destructive group"
+      {/* Pin Section (Bottom) */}
+      <div className="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0 bg-white/50 dark:bg-card-dark/50 backdrop-blur-sm">
+        <div className="space-y-1 mb-2">
+          <Link 
+            to="/settings" 
+            className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            <LogOut className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
-            <span className="font-semibold text-sm">Sair da conta</span>
-          </button>
+            <span className="material-symbols-outlined text-lg">settings</span>
+            <span className="text-[12px]">Configurações</span>
+          </Link>
+          <Link 
+            to="/help" 
+            className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">help</span>
+            <span className="text-[12px]">Central de Ajuda</span>
+          </Link>
+          <Link 
+            to="/premium" 
+            className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-amber-500 hover:bg-amber-500/10 transition-colors font-semibold"
+          >
+            <span className="material-symbols-outlined text-lg">workspace_premium</span>
+            <span className="text-[12px]">Plano Premium</span>
+          </Link>
         </div>
+        <button 
+          onClick={handleSignOut}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors"
+        >
+          <span className="material-symbols-outlined text-lg">logout</span>
+          <span className="text-[12px] font-bold">Sair</span>
+        </button>
       </div>
     </aside>
   );

@@ -1,0 +1,10 @@
+steps:
+  - id: ux-briefing
+    file: steps/step-01-ux_briefing.md
+  - id: ui-design
+    file: steps/step-02-ui_design.md
+  - id: frontend-implementation
+    file: steps/step-03-frontend_implementation.md
+  - id: qa-veredito
+    file: steps/step-04-qa_veredito.md
+    on_reject: frontend-implementation

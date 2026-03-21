@@ -297,421 +297,347 @@ export default function Transactions() {
 
   return (
     <AppLayout>
-      {/* Header */}
-      <div className="flex flex-col gap-4 mb-6 animate-fade-in">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Transações</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gerencie suas receitas e despesas
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={exportToCSV} className="flex-1 sm:flex-none">
-            <Download className="w-4 h-4 mr-1.5" />
-            <span className="hidden sm:inline">Exportar</span> CSV
-          </Button>
-          <Button className="btn-gradient flex-1 sm:flex-none" size="sm" onClick={handleCreate}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Nova Transação
-          </Button>
-        </div>
-      </div>
+      {/* Decorative blurs */}
+      <div className="fixed top-24 -left-20 w-80 h-80 bg-primary/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse"></div>
+      <div className="fixed bottom-20 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-[140px] pointer-events-none -z-10 animate-pulse"></div>
 
-      {/* Period Selector */}
-      <div className="flex items-center justify-center gap-2 mb-8 animate-fade-in" style={{ animationDelay: '50ms' }}>
-        <div className="flex items-center gap-2 bg-card/40 backdrop-blur-sm p-1.5 rounded-2xl border border-border/50 shadow-sm">
-          <Button variant="ghost" size="icon" onClick={goToPreviousMonth} className="h-9 w-9 rounded-xl">
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+      <div className="max-w-[1400px] mx-auto w-full animate-fade-in p-2 pb-24">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Movimentações</h1>
+            <p className="text-slate-400 text-sm">Gerencie seu fluxo de caixa e transações recentes.</p>
+          </div>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <button onClick={exportToCSV} className="flex items-center justify-center flex-1 md:flex-none gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 transition-all text-sm font-medium rounded-xl text-white">
+              <span className="material-symbols-outlined text-[20px]">file_download</span>
+              Exportar CSV
+            </button>
+            <button onClick={handleCreate} className="flex items-center justify-center flex-1 md:flex-none gap-2 px-5 py-2.5 bg-primary text-white hover:opacity-90 transition-all text-sm font-semibold rounded-xl glow-primary">
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Nova Transação
+            </button>
+          </div>
+        </header>
 
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" className="h-9 font-bold px-4 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors">
-                <Calendar className="w-4 h-4 mr-2" />
-                {MONTHS[selectedMonth]} {selectedYear}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-4 bg-card/95 backdrop-blur-xl border-border/50 shadow-2xl rounded-2xl" align="center">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Ano</label>
-                  <div className="flex flex-wrap gap-2">
-                    {availableYears.map(year => (
-                      <Button
-                        key={year}
-                        variant={selectedYear === year ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedYear(year)}
-                        className="rounded-lg"
-                      >
-                        {year}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Mês</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {MONTHS.map((month, index) => (
-                      <Button
-                        key={month}
-                        variant={selectedMonth === index ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => {
-                          setSelectedMonth(index);
-                          setIsCalendarOpen(false);
-                          setCurrentPage(1);
-                        }}
-                        className="rounded-lg"
-                      >
-                        {month.slice(0, 3)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <Button variant="secondary" className="w-full rounded-xl" onClick={goToCurrentMonth}>
-                  Mês Atual
-                </Button>
+        {/* Summary Cards */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                <span className="material-symbols-outlined">arrow_downward</span>
               </div>
-            </PopoverContent>
-          </Popover>
-
-          <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-9 w-9 rounded-xl">
-            <ChevronRight className="w-5 h-5" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
-        <div className="stat-card animate-fade-in p-3 sm:p-4" style={{ animationDelay: '100ms' }}>
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Receitas</p>
-          <p className="text-sm sm:text-xl font-bold text-success truncate">{formatCurrency(stats.totalIncome)}</p>
-        </div>
-        <div className="stat-card animate-fade-in p-3 sm:p-4" style={{ animationDelay: '150ms' }}>
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Despesas</p>
-          <p className="text-sm sm:text-xl font-bold text-destructive truncate">{formatCurrency(stats.totalExpense)}</p>
-        </div>
-        <div className="stat-card animate-fade-in p-3 sm:p-4" style={{ animationDelay: '200ms' }}>
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Saldo</p>
-          <p className={cn(
-            "text-sm sm:text-xl font-bold truncate",
-            stats.balance >= 0 ? "text-success" : "text-destructive"
-          )}>
-            {formatCurrency(stats.balance)}
-          </p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col gap-4 mb-6 animate-fade-in" style={{ animationDelay: '250ms' }}>
-        <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar transações..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="pl-10"
-          />
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
-          {/* Advanced Filters */}
-          <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className={cn(hasActiveFilters && "border-primary text-primary")}>
-                <Filter className="w-4 h-4 mr-2" />
-                Filtros
-                {hasActiveFilters && (
-                  <span className="ml-2 w-2 h-2 rounded-full bg-primary" />
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-4" align="end">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Categoria</label>
-                  <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[300px] overflow-y-auto">
-                      <SelectItem value="all" className="font-semibold">Todas as categorias</SelectItem>
-                      {categories?.filter(cat => filter === "all" || cat.type === filter).map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center p-1 shrink-0"
-                              style={{ backgroundColor: cat.color }}
-                            >
-                              {cat.icon?.endsWith('.svg') ? (
-                                <img
-                                  src={`/icons/categorias/${cat.type === 'income' ? 'receitas' : 'despesas'}/${cat.icon}`}
-                                  alt=""
-                                  className="w-full h-full object-contain brightness-0 invert"
-                                />
-                              ) : (
-                                <span className="text-xs text-white">{cat.icon || "📦"}</span>
-                              )}
-                            </div>
-                            <span>{cat.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Método de Pagamento</label>
-                  <Select value={paymentMethodFilter} onValueChange={(v) => { setPaymentMethodFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      {paymentMethods.map(pm => (
-                        <SelectItem key={pm} value={pm}>
-                          {pm === "pix" ? "PIX" :
-                            pm === "credit" ? "Crédito" :
-                              pm === "debit" ? "Débito" :
-                                pm === "cash" ? "Dinheiro" :
-                                  pm === "transfer" ? "Transferência" :
-                                    pm === "boleto" ? "Boleto" : pm}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {hasActiveFilters && (
-                  <Button variant="ghost" className="w-full" onClick={clearFilters}>
-                    Limpar Filtros
-                  </Button>
-                )}
+              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Receitas</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-extrabold tracking-tighter text-white">{formatCurrency(stats.totalIncome)}</span>
+            </div>
+          </div>
+          
+          <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all"></div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400">
+                <span className="material-symbols-outlined">arrow_upward</span>
               </div>
-            </PopoverContent>
-          </Popover>
-
-          {/* Type Filter */}
-          <div className="flex bg-muted rounded-lg p-1 overflow-x-auto">
-            {(["all", "income", "expense"] as const).map((type) => (
-              <button
-                key={type}
-                onClick={() => { setFilter(type); setCurrentPage(1); }}
-                className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                  filter === type
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {type === "all" ? "Todas" : type === "income" ? "Receitas" : "Despesas"}
-              </button>
-            ))}
+              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Despesas</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-extrabold tracking-tighter text-white">{formatCurrency(stats.totalExpense)}</span>
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Sort Options */}
-      <div className="flex gap-2 mb-4 animate-fade-in" style={{ animationDelay: '280ms' }}>
-        <span className="text-sm text-muted-foreground flex items-center">Ordenar por:</span>
-        {([
-          { field: "date" as SortField, label: "Data" },
-          { field: "amount" as SortField, label: "Valor" },
-          { field: "category" as SortField, label: "Categoria" },
-        ]).map(({ field, label }) => (
-          <Button
-            key={field}
-            variant={sortField === field ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => toggleSort(field)}
-            className="gap-1"
-          >
-            {label}
-            {sortField === field && (
-              <ArrowUpDown className={cn("w-3 h-3", sortOrder === "asc" && "rotate-180")} />
-            )}
-          </Button>
-        ))}
-      </div>
-
-      {/* Transactions List */}
-      <div className="bg-card rounded-2xl border border-border/50 shadow-card overflow-hidden animate-slide-up" style={{ animationDelay: '300ms' }}>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          
+          <div className="glass p-6 rounded-2xl border border-primary/20 relative overflow-hidden group bg-primary/5">
+            <div className="absolute -right-4 -top-4 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined">account_balance_wallet</span>
+              </div>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-primary">Saldo do Período</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-extrabold tracking-tighter text-white">{formatCurrency(stats.balance)}</span>
+              <span className="text-[11px] text-slate-400 font-medium mt-1">Líquido acumulado</span>
+            </div>
           </div>
-        ) : filteredTransactions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <p className="text-lg font-medium">Nenhuma transação encontrada</p>
-            <p className="text-sm">Não há transações para {MONTHS[selectedMonth]} de {selectedYear}</p>
-          </div>
-        ) : (
-          <>
-            <div className="divide-y divide-border/50">
-              {paginatedTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-muted/50 transition-colors"
-                >
-                  <div
-                    className={cn(
-                      "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center p-2.5 shrink-0 shadow-sm transition-transform group-hover:scale-105",
-                      !transaction.category?.icon && (
-                        transaction.type === "income"
-                          ? "bg-success text-white"
-                          : "bg-destructive text-white"
-                      )
-                    )}
-                    style={transaction.category?.icon ? { backgroundColor: transaction.category.color } : {}}
-                  >
-                    {transaction.category?.icon?.endsWith('.svg') ? (
-                      <img
-                        src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${transaction.category.icon}`}
-                        alt={transaction.category.name}
-                        className="w-full h-full object-contain brightness-0 invert"
-                      />
-                    ) : transaction.category?.icon ? (
-                      <span className="text-xl sm:text-2xl text-white font-bold">
-                        {transaction.category.icon}
-                      </span>
-                    ) : transaction.type === "income" ? (
-                      <ArrowDownLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    ) : (
-                      <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    )}
-                  </div>
+        </section>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate text-sm sm:text-base">
-                      {transaction.description}
-                    </p>
-                    <div className="flex items-center gap-1 sm:gap-2 mt-0.5 flex-wrap">
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        {formatDate(transaction.date)}
-                      </span>
-                      <span className="text-muted-foreground/50 hidden sm:inline">•</span>
-                      <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
-                        {transaction.category?.name || "Sem categoria"}
-                      </span>
-                      {transaction.payment_method && (
-                        <>
-                          <span className="text-muted-foreground/50 hidden sm:inline">•</span>
-                          <span className="text-xs sm:text-sm text-muted-foreground capitalize hidden sm:inline">
-                            {transaction.payment_method === "pix" ? "PIX" :
-                              transaction.payment_method === "credit" ? "Crédito" :
-                                transaction.payment_method === "debit" ? "Débito" :
-                                  transaction.payment_method === "cash" ? "Dinheiro" :
-                                    transaction.payment_method}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <p
-                      className={cn(
-                        "font-semibold text-sm sm:text-base",
-                        transaction.type === "income"
-                          ? "text-success"
-                          : "text-destructive"
-                      )}
-                    >
-                      {transaction.type === "income" ? "+" : "-"}
-                      {formatCurrency(Number(transaction.amount))}
-                    </p>
-                  </div>
-
-                  {/* Actions - visible on mobile */}
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-8 w-8 sm:h-9 sm:w-9"
-                      onClick={() => handleEdit(transaction)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 hidden sm:flex"
-                      onClick={() => handleDuplicate(transaction)}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => setDeleteId(transaction.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+        {/* Filters and List wrapper */}
+        <section className="mb-8 flex flex-col xl:flex-row gap-6 items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
+            {/* Custom: Period Selector visually integrated as a rounded pill */}
+            <div className="flex items-center bg-white/5 p-1 rounded-xl w-full sm:w-auto overflow-hidden shrink-0">
+               <button onClick={goToPreviousMonth} className="px-3 py-2 text-slate-400 hover:text-white transition-all flex items-center justify-center">
+                 <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+               </button>
+               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                 <PopoverTrigger asChild>
+                   <button className="px-4 py-2 text-sm font-semibold text-white transition-all min-w-[120px] text-center">
+                     {MONTHS[selectedMonth].substring(0,3)} {selectedYear}
+                   </button>
+                 </PopoverTrigger>
+                 <PopoverContent className="w-64 p-4 glass border border-white/[0.05] shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-2xl" align="center">
+                   <div className="space-y-4">
+                     <div>
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Ano</label>
+                       <div className="flex flex-wrap gap-2">
+                         {availableYears.map(year => (
+                           <Button key={year} variant={selectedYear === year ? "default" : "outline"} size="sm" onClick={() => setSelectedYear(year)} className="rounded-lg h-7">
+                             {year}
+                           </Button>
+                         ))}
+                       </div>
+                     </div>
+                     <div>
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Mês</label>
+                       <div className="grid grid-cols-3 gap-2">
+                         {MONTHS.map((month, index) => (
+                           <Button key={month} variant={selectedMonth === index ? "default" : "outline"} size="sm" 
+                             onClick={() => { setSelectedMonth(index); setIsCalendarOpen(false); setCurrentPage(1); }} 
+                             className="rounded-lg h-7 text-xs">
+                             {month.slice(0, 3)}
+                           </Button>
+                         ))}
+                       </div>
+                     </div>
+                     <Button variant="secondary" className="w-full rounded-xl mt-2 h-8 text-xs font-bold" onClick={goToCurrentMonth}>
+                       Mês Atual
+                     </Button>
+                   </div>
+                 </PopoverContent>
+               </Popover>
+               <button onClick={goToNextMonth} className="px-3 py-2 text-slate-400 hover:text-white transition-all flex items-center justify-center">
+                 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+               </button>
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between p-4 border-t border-border/50">
-                <p className="text-sm text-muted-foreground">
-                  Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} de {filteredTransactions.length}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum: number;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
+            <div className="flex items-center bg-white/5 p-1 rounded-xl w-full sm:w-auto shrink-0 overflow-x-auto hide-scrollbar">
+              <button onClick={() => {setFilter("all"); setCurrentPage(1);}} className={cn("px-6 py-2 text-sm transition-all rounded-lg whitespace-nowrap", filter === "all" ? "bg-primary text-white font-semibold shadow-sm" : "font-medium text-slate-400 hover:text-white")}>Todas</button>
+              <button onClick={() => {setFilter("income"); setCurrentPage(1);}} className={cn("px-6 py-2 text-sm transition-all rounded-lg whitespace-nowrap", filter === "income" ? "bg-primary text-white font-semibold shadow-sm" : "font-medium text-slate-400 hover:text-white")}>Receitas</button>
+              <button onClick={() => {setFilter("expense"); setCurrentPage(1);}} className={cn("px-6 py-2 text-sm transition-all rounded-lg whitespace-nowrap", filter === "expense" ? "bg-primary text-white font-semibold shadow-sm" : "font-medium text-slate-400 hover:text-white")}>Despesas</button>
+            </div>
+          </div>
 
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "ghost"}
-                          size="sm"
-                          className="w-8 h-8 p-0"
-                          onClick={() => setCurrentPage(pageNum)}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
+          <div className="flex items-center gap-4 w-full xl:w-auto">
+            <div className="relative flex-grow xl:w-72">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+              <input value={searchQuery} onChange={e => {setSearchQuery(e.target.value); setCurrentPage(1);}} className="w-full bg-[#11141d] border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 text-white placeholder:text-slate-400" placeholder="Buscar..." type="text"/>
+            </div>
+            
+            <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <PopoverTrigger asChild>
+                <button className={cn("flex items-center justify-center gap-2 px-4 py-2.5 transition-all rounded-xl text-sm font-medium shrink-0", hasActiveFilters ? "bg-primary/20 text-primary border border-primary/30" : "bg-[#11141d] hover:bg-[#1f2331] text-white border border-white/5")}>
+                  <span className="material-symbols-outlined text-[20px]">filter_list</span>
+                  <span className="hidden sm:inline">Filtros</span>
+                  {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-primary" />}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-4 glass border border-white/[0.05] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)]" align="end">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Categoria</label>
+                    <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setCurrentPage(1); }}>
+                      <SelectTrigger className="bg-[#11141d] border-white/5 text-white h-10 rounded-xl">
+                        <SelectValue placeholder="Todas as categorias" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[250px] bg-[#11141d] border-white/10 text-white rounded-xl">
+                        <SelectItem value="all">Todas as categorias</SelectItem>
+                        {categories?.filter(cat => filter === "all" || cat.type === filter).map(cat => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: `${cat.color}33`, color: cat.color }}>
+                                {cat.icon?.endsWith('.svg') ? (
+                                  <img src={`/icons/categorias/${cat.type === 'income' ? 'receitas' : 'despesas'}/${cat.icon}`} alt="" className="w-3 h-3 object-contain" style={{ filter: `drop-shadow(0 0 1px ${cat.color})` }} />
+                                ) : (
+                                  <span className="text-[10px] sm:text-[12px]">{cat.icon || "📦"}</span>
+                                )}
+                              </div>
+                              <span className="text-sm">{cat.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Método</label>
+                    <Select value={paymentMethodFilter} onValueChange={(v) => { setPaymentMethodFilter(v); setCurrentPage(1); }}>
+                      <SelectTrigger className="bg-[#11141d] border-white/5 text-white h-10 rounded-xl">
+                        <SelectValue placeholder="Todos os métodos" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#11141d] border-white/10 text-white rounded-xl">
+                        <SelectItem value="all">Todos</SelectItem>
+                        {paymentMethods.map(pm => (
+                          <SelectItem key={pm} value={pm}>
+                            {pm === "pix" ? "PIX" : pm === "credit" ? "Crédito" : pm === "debit" ? "Débito" : pm === "cash" ? "Dinheiro" : pm === "transfer" ? "Transferência" : pm === "boleto" ? "Boleto" : pm}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {hasActiveFilters && (
+                     <Button variant="ghost" className="w-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 h-10 rounded-xl mt-2" onClick={clearFilters}>Limpar Filtros</Button>
+                  )}
                 </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </section>
+
+        {/* Transactions Table */}
+        <div className="glass rounded-2xl border border-white/5 overflow-hidden animate-slide-up bg-[#07090f]/30" style={{ animationDelay: '300ms' }}>
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="border-b border-white/5 bg-white/[0.02]">
+                  <th className="px-6 sm:px-8 py-5 text-[10px] uppercase font-bold tracking-widest text-slate-400">Transação</th>
+                  <th className="px-4 sm:px-6 py-5 text-[10px] uppercase font-bold tracking-widest text-slate-400">Data</th>
+                  <th className="px-4 sm:px-6 py-5 text-[10px] uppercase font-bold tracking-widest text-slate-400">Categoria</th>
+                  <th className="px-4 sm:px-6 py-5 text-[10px] uppercase font-bold tracking-widest text-slate-400">Status</th>
+                  <th className="px-6 sm:px-8 py-5 text-[10px] uppercase font-bold tracking-widest text-slate-400 text-right">Valor</th>
+                  <th className="px-4 py-5 w-10"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+                    </td>
+                  </tr>
+                ) : paginatedTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center">
+                      <p className="text-lg font-medium text-white mb-2">Nenhuma transação encontrada</p>
+                      <p className="text-sm text-slate-400">Não há transações para os filtros aplicados neste período.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedTransactions.map((transaction) => (
+                    <tr key={transaction.id} className="hover:bg-white/[0.02] transition-colors group cursor-pointer" onClick={() => handleEdit(transaction)}>
+                      <td className="px-6 sm:px-8 py-5">
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className={cn(
+                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                              !transaction.category?.icon ? (transaction.type === "income" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400") : ""
+                            )}
+                            style={transaction.category?.icon ? { backgroundColor: `${transaction.category.color}20`, color: transaction.category.color } : {}}
+                          >
+                            {transaction.category?.icon?.endsWith('.svg') ? (
+                              <img
+                                src={`/icons/categorias/${transaction.type === 'income' ? 'receitas' : 'despesas'}/${transaction.category.icon}`}
+                                alt={transaction.category.name}
+                                className="w-[18px] h-[18px] sm:w-5 sm:h-5 object-contain"
+                                style={{ filter: `drop-shadow(0 0 1px ${transaction.category.color})` }}
+                              />
+                            ) : transaction.category?.icon ? (
+                              <span className="material-symbols-outlined font-bold">{transaction.category.icon}</span>
+                            ) : transaction.type === "income" ? (
+                              <span className="material-symbols-outlined">arrow_downward</span>
+                            ) : (
+                              <span className="material-symbols-outlined">arrow_upward</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-white truncate max-w-[150px] sm:max-w-xs">{transaction.description}</p>
+                            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                              {transaction.category?.name || "Geral"} {transaction.payment_method && `• ${transaction.payment_method.replace('debit', 'Débito').replace('credit', 'Crédito').replace('transfer', 'Transferência')}`}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-5 text-sm text-slate-400 truncate">
+                        {formatDate(transaction.date)}
+                      </td>
+                      <td className="px-4 sm:px-6 py-5">
+                        <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-bold text-slate-300 uppercase tracking-widest truncate max-w-[100px] inline-block">
+                          {transaction.category?.name || "Sem cat."}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 py-5">
+                        <div className="flex items-center gap-2 text-emerald-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                          <span className="text-[11px] font-semibold uppercase">Confirmado</span>
+                        </div>
+                      </td>
+                      <td className={cn(
+                        "px-6 sm:px-8 py-5 text-right font-bold whitespace-nowrap",
+                        transaction.type === "income" ? "text-emerald-400" : "text-rose-400"
+                      )}>
+                        {transaction.type === "income" ? "+" : "-"} {formatCurrency(Number(transaction.amount))}
+                      </td>
+                      {/* Invisible actions column to allow hover actions without shifting table layout */}
+                      <td className="px-2 py-5 w-16" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={(e) => { e.stopPropagation(); handleDuplicate(transaction); }} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10" title="Duplicar">
+                             <span className="material-symbols-outlined text-[18px]">file_copy</span>
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); setDeleteId(transaction.id); }} className="w-8 h-8 rounded-lg flex items-center justify-center text-rose-400 hover:text-rose-300 hover:bg-rose-500/10" title="Apagar">
+                             <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          {totalPages > 1 && (
+            <footer className="p-4 sm:p-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-xs text-slate-400 font-medium">Mostrando {Math.min(((currentPage - 1) * ITEMS_PER_PAGE) + 1, filteredTransactions.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)} de {filteredTransactions.length} transações</span>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </button>
+                
+                {/* Dynamically render page buttons matching HTML style */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) pageNum = i + 1;
+                  else if (currentPage <= 3) pageNum = i + 1;
+                  else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                  else pageNum = currentPage - 2 + i;
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={cn(
+                        "w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-all",
+                        currentPage === pageNum 
+                          ? "bg-primary text-white font-bold" 
+                          : "bg-white/5 text-slate-400 hover:text-white"
+                      )}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                
+                {totalPages > 5 && currentPage < totalPages - 2 && (
+                  <span className="text-slate-500 px-1">...</span>
+                )}
+
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
               </div>
-            )}
-          </>
-        )}
+            </footer>
+          )}
+        </div>
       </div>
 
       {/* Transaction Form Modal */}
@@ -726,18 +652,18 @@ export default function Transactions() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="glass border-white/10 rounded-2xl p-6 shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir transação?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. A transação será permanentemente excluída.
+            <AlertDialogTitle className="text-white text-xl">Excluir transação?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Esta ação não pode ser desfeita. A transação será permanentemente excluída da sua conta.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="mt-6 gap-3 sm:gap-2">
+            <AlertDialogCancel className="bg-[#11141d] border-white/10 text-white hover:bg-white/5 hover:text-white rounded-xl border">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-rose-500 text-white hover:bg-rose-600 rounded-xl shadow-lg shadow-rose-500/20"
             >
               Excluir
             </AlertDialogAction>

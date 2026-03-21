@@ -6,6 +6,8 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -13,9 +15,14 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] ||
+    user?.email?.split('@')[0] ||
+    'Usuário';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50 dark:bg-background-dark flex overflow-hidden">
       {!isMobile && <Sidebar />}
       
       {/* Mobile Header */}
@@ -27,21 +34,49 @@ export function AppLayout({ children }: AppLayoutProps) {
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary via-primary/90 to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Meu Controle</span>
+              <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">Prospera</span>
             </Link>
           </div>
           <NotificationBell />
         </header>
       )}
       
-      <main className={`${isMobile ? 'pt-16 pb-24' : 'lg:pl-64 focus-visible:outline-none focus:outline-none transition-all duration-300'} min-h-screen relative`}>
-        {/* Background ambient light effects for premium look */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 opacity-40 dark:opacity-20">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-secondary/15 blur-[100px]" />
-        </div>
+      <main className={cn(
+        "flex-1 flex flex-col h-screen overflow-y-auto bg-slate-50 dark:bg-background-dark transition-all duration-300",
+        !isMobile && "lg:pl-64"
+      )}>
+        {!isMobile && (
+          <header className="h-20 flex items-center justify-between px-8 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 shrink-0">
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-semibold dark:text-slate-100">Olá, {user?.user_metadata?.full_name || firstName}</h2>
+              <span className="text-slate-400 text-sm hidden md:block">Bem-vindo de volta!</span>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="relative hidden lg:block">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+                <input 
+                  className="bg-slate-100 dark:bg-slate-800 border-none rounded-full pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary w-64 text-slate-100 placeholder:text-slate-500" 
+                  placeholder="Buscar transação..." 
+                  type="text"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <NotificationBell />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-400 p-0.5">
+                  <div className="w-full h-full rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-primary font-bold overflow-hidden">
+                    {user?.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      firstName[0].toUpperCase()
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+        )}
 
-        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
+        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full animate-fade-in">
           {children}
         </div>
       </main>

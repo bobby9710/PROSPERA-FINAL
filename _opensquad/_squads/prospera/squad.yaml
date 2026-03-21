@@ -1,55 +1,62 @@
 name: "Prospera Evolution Squad"
-description: "Squad de alta performance para a evolução geral, estabilidade e inovação da plataforma Prospera, com foco total no design Stitch e excelência técnica."
+description: "Squad de elite para evolução de produtos digitais, focado em UX estratégica, UI Premium (Stitch) e implementação Front-end de alta fidelidade."
 performanceMode: "Alta Performance"
 companyProfile: "_opensquad/_memory/company.md"
 
+skills:
+  - web_search
+  - web_fetch
+
+data:
+  - pipeline/data/research-brief.md
+  - pipeline/data/domain-framework.md
+  - pipeline/data/quality-criteria.md
+  - pipeline/data/output-examples.md
+  - pipeline/data/anti-patterns.md
+
 agents:
-  - id: pm
-    name: "Patrícia Produto"
-    role: "Product Manager & Estrategista"
+  - id: ux_strategist
+    name: "Paulo Produto"
+    role: "Product Designer & UX Strategist"
     initial: "P"
-    prompt: "_opensquad/core/prompts/patricia-produto.prompt.md"
-    knowledgeDomains: ["Fintech Agile Frameworks", "Personal Finance Metrics", "Task Prioritization"]
-    workflow: "strategist"
+    prompt: "./agents/ux_strategist.agent.md"
+    knowledgeDomains: ["UX Strategy", "Information Architecture", "Conversion Rate Optimization (CRO)"]
 
-  - id: pd
-    name: "Davi Designer"
-    role: "Product Designer UX/UI"
-    initial: "D"
-    prompt: "_opensquad/core/prompts/davi-designer.prompt.md"
-    knowledgeDomains: ["Responsive Dashboards", "Dark/Light Mode Systems", "Stitch Design Integration"]
-    workflow: "image-design"
+  - id: art_director
+    name: "Aline Aparência"
+    role: "Art Director & UI Specialist"
+    initial: "A"
+    prompt: "./agents/art_director.agent.md"
+    knowledgeDomains: ["Premium UI Design", "Stitch Design System", "Visual Identity"]
 
-  - id: fs
-    name: "Sandro Software"
-    role: "Full Stack Developer"
-    initial: "S"
-    prompt: "_opensquad/core/prompts/sandro-software.prompt.md"
-    knowledgeDomains: ["React Vite Tailwind", "API Integration", "State Management (Zustand/Query)"]
-    workflow: "technical-writing"
+  - id: frontend_engineer
+    name: "Fabio Front"
+    role: "Front-end & Visual Implementation"
+    initial: "F"
+    prompt: "./agents/frontend_engineer.agent.md"
+    knowledgeDomains: ["React/Next.js/Vite", "Micro-interactions", "Responsive Performance"]
 
-  - id: qa
-    name: "Quitéria Qualidade"
-    role: "QA & DevOps Engineer"
-    initial: "Q"
-    prompt: "_opensquad/core/prompts/quiteria-qualidade.prompt.md"
-    knowledgeDomains: ["Vitest/Playwright Automation", "Visual Regression Tests", "CI/CD Vercel"]
-    workflow: "review"
+  - id: qa_critic
+    name: "Vitor Veredito"
+    role: "QA & UI/UX Critic"
+    initial: "V"
+    prompt: "./agents/qa_critic.agent.md"
+    knowledgeDomains: ["Quality Assurance", "UX Auditing", "Final Polish & Conversion"]
 
 pipeline:
   stages:
-    - name: "Briefing & Priorização"
-      agent: "pm"
-      task: "Transformar a visão do usuário em stories acionáveis e priorizadas."
+    - name: "Briefing & Estratégia de Produto"
+      agent: "ux_strategist"
+      task: "Definir a estrutura, fluxos e hierarquia da funcionalidade/página."
 
-    - name: "Refinamento de Design"
-      agent: "pd"
-      task: "Validar e adaptar o design do Stitch para as funcionalidades solicitadas."
+    - name: "Direção de Arte & Layout Premium"
+      agent: "art_director"
+      task: "Criar o design visual seguindo o padrão Stitch e estética premium."
 
-    - name: "Implementação de Código"
-      agent: "fs"
-      task: "Desenvolver frontend e backend seguindo o padrão Stitch e stack moderna."
+    - name: "Implementação Front-end de Alta Fidelidade"
+      agent: "frontend_engineer"
+      task: "Transformar o design em código React funcional com animações e micro-interações."
 
-    - name: "Validação & Deploy"
-      agent: "qa"
-      task: "Realizar testes automatizados, visuais e garantir o deploy estável."
+    - name: "Veredito de Qualidade & Polimento"
+      agent: "qa_critic"
+      task: "Revisar cada detalhe visual e funcional para garantir um produto impecável."

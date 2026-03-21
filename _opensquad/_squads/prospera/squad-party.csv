@@ -1,0 +1,5 @@
+id,displayName,icon,path
+ux_strategist,Paulo Produto,🧠,./agents/ux_strategist.agent.md
+art_director,Aline Aparência,🎨,./agents/art_director.agent.md
+frontend_engineer,Fabio Front,💻,./agents/frontend_engineer.agent.md
+qa_critic,Vitor Veredito,🧐,./agents/qa_critic.agent.md

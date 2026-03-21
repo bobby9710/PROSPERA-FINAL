@@ -1,0 +1,47 @@
+{
+  "squad": "prospera",
+  "status": "running",
+  "step": { "current": 3, "total": 4, "label": "frontend-implementation" },
+  "agents": [
+    {
+      "id": "ux_strategist",
+      "name": "Paulo Produto",
+      "icon": "🧠",
+      "status": "done",
+      "deliverTo": null,
+      "desk": { "col": 1, "row": 1 }
+    },
+    {
+      "id": "art_director",
+      "name": "Aline Aparência",
+      "icon": "🎨",
+      "status": "done",
+      "deliverTo": null,
+      "desk": { "col": 2, "row": 1 }
+    },
+    {
+      "id": "frontend_engineer",
+      "name": "Fabio Front",
+      "icon": "💻",
+      "status": "working",
+      "deliverTo": null,
+      "desk": { "col": 1, "row": 2 }
+    },
+    {
+      "id": "qa_critic",
+      "name": "Vitor Veredito",
+      "icon": "🧐",
+      "status": "idle",
+      "deliverTo": null,
+      "desk": { "col": 2, "row": 2 }
+    }
+  ],
+  "handoff": {
+    "from": "art_director",
+    "to": "frontend_engineer",
+    "message": "Especificação de UI completa com tokens Stitch e estética premium.",
+    "completedAt": "2026-03-18T23:22:16Z"
+  },
+  "startedAt": "2026-03-18T23:20:17Z",
+  "updatedAt": "2026-03-18T23:22:16Z"
+}
